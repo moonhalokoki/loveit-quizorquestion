@@ -6,15 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Kawaii OS - Ultimate Backup</title>
-    <link
-      rel="apple-touch-icon"
-      href="https://i.postimg.cc/d30hx819/IMG-5616.jpg"
-    />
-    <link
-      rel="icon"
-      type="image/jpg"
-      href="https://i.postimg.cc/d30hx819/IMG-5616.jpg"
-    />
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
+    <link rel="icon" type="image/jpg" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.65);
@@ -106,7 +99,7 @@
             display: flex; justify-content: space-evenly; align-items: center; 
             padding: 0 10px; flex-shrink: 0; 
             margin-top: auto; 
-            margin-bottom: 15px; /* 🔥 在这里修改Dock离底部的距离，数字越大越靠上 */
+            margin-bottom: 15px;
         }
         .dock-app { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
         .dock-box { 
@@ -139,6 +132,7 @@
         #interactApp { z-index: 2100; background: #000; display: none; } 
         #interactApp.active { display: flex; }
         #interactSettingsApp { z-index: 2200; background: #fff; } 
+        #petSettingsApp { z-index: 2300; background: #f2f2f7; }
         
         #interactSelector { 
             z-index: 2050; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); 
@@ -431,9 +425,50 @@
         
         .sprite-input-group { text-align: left; margin-bottom: 15px; }
         .sprite-input-label { font-size: 12px; color: #888; margin-bottom: 5px; display: block; }
+
+        /* --- 🐾 桌宠样式 --- */
+        #desktopPet {
+            position: fixed; width: 100px; height: 100px; z-index: 9999;
+            top: 20%; left: 50%; touch-action: none;
+            cursor: grab; display: none; /* 默认隐藏，由JS控制开启 */
+        }
+        #petImg { width: 100%; height: 100%; object-fit: contain; pointer-events: none; drop-shadow: 0 4px 4px rgba(0,0,0,0.2); }
+        .pet-bubble {
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: #fff; border: 1px solid #ddd; padding: 8px 12px;
+            border-radius: 12px; font-size: 12px; color: #333;
+            white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .pet-bubble::after {
+            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: #fff transparent transparent transparent;
+        }
+        .pet-bubble.active { opacity: 1; bottom: 105%; }
+        
+        /* 开关样式 */
+        .switch-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; }
+        .toggle-switch {
+            position: relative; width: 50px; height: 26px;
+            background: #e0e0e0; border-radius: 13px; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-switch.active { background: var(--success-color); }
+        .toggle-thumb {
+            position: absolute; top: 2px; left: 2px; width: 22px; height: 22px;
+            background: #fff; border-radius: 50%; transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.active .toggle-thumb { left: 26px; }
+
     </style>
 </head>
 <body>
+
+    <!-- 🐾 桌宠本体 -->
+    <div id="desktopPet">
+        <div class="pet-bubble" id="petBubble">...</div>
+        <img src="" id="petImg">
+    </div>
 
     <!-- 🌸 弹窗与提示 -->
     <div id="custom-modal-overlay">
@@ -576,9 +611,61 @@
         
         <div class="dock">
             <div class="dock-app" onclick="openApiApp()"><div class="dock-box" id="icon_api"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12.89,3L14.85,3.4L11.11,21L9.15,20.6L12.89,3M19.59,12L16,8.41V5.58L22.42,12L16,18.41V15.58L19.59,12M1.58,12L8,5.58V8.41L4.41,12L8,15.58V18.41L1.58,12Z" /></svg></div><span class="app-label">API</span></div>
+            <!-- 🐾 桌宠 APP 入口 -->
+            <div class="dock-app" onclick="openPetApp()"><div class="dock-box"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12C2,14.4 2.85,16.6 4.26,18.33C4.05,17.15 4.69,15.63 5.5,14.5C6.5,13.11 7.42,12 8.5,12C9.58,12 10.5,13.11 11.5,14.5C11.95,15.11 12.35,15.9 12.72,16.79C13.56,16.32 14.53,16 15.58,16C18.06,16 20.31,17.16 21.79,18.96C21.93,18.34 22,17.68 22,17C22,16.03 21.86,15.1 21.6,14.21C21.86,13.67 22,13.06 22,12.41C22,10.77 20.89,9.41 19.38,9.08C19.46,8.81 19.5,8.53 19.5,8.25C19.5,6.59 18.16,5.25 16.5,5.25C15.86,5.25 15.27,5.43 14.77,5.74C14.07,3.58 12.06,2 9.68,2C9.11,2 8.57,2.09 8.07,2.26C9.25,1.15 10.82,0.5 12.5,0.5C17.75,0.5 22,4.75 22,10C22,12.4 21.13,14.6 19.68,16.33C19.89,17.5 19.25,19 18.44,20.14C17.44,21.5 16.5,22.64 15.42,22.64C14.34,22.64 13.4,21.5 12.4,20.14C11.95,19.5 11.55,18.74 11.2,17.84C10.36,18.31 9.4,18.64 8.35,18.64C5.86,18.64 3.61,17.47 2.13,15.68C2,16.3 1.92,16.94 1.92,17.61C1.92,18.57 2.06,19.5 2.32,20.39C2.06,20.94 1.92,21.54 1.92,22.19C1.92,23.83 3.03,25.19 4.54,25.5C4.46,25.79 4.42,26.07 4.42,26.35C4.42,28 5.76,29.35 7.42,29.35C8.06,29.35 8.65,29.17 9.15,28.86C9.85,31.02 11.86,32.6 14.24,32.6C14.81,32.6 15.35,32.5 15.85,32.34C14.67,33.45 13.1,34.1 11.42,34.1C6.17,34.1 1.92,29.85 1.92,24.6C1.92,22.2 2.79,20 4.24,18.27Z" /></svg></div><span class="app-label">桌宠</span></div>
             <div class="dock-app"><div class="dock-box" style="opacity:0.6"><svg class="svg-icon" style="opacity:0.3" viewBox="0 0 24 24"><path d="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" /></svg></div><span class="app-label">占位</span></div>
             <div class="dock-app"><div class="dock-box" style="opacity:0.6"><svg class="svg-icon" style="opacity:0.3" viewBox="0 0 24 24"><path d="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" /></svg></div><span class="app-label">占位</span></div>
-            <div class="dock-app"><div class="dock-box" style="opacity:0.6"><svg class="svg-icon" style="opacity:0.3" viewBox="0 0 24 24"><path d="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M13.96,12.29L11.21,15.83L9.25,13.47L6.5,17H17.5L13.96,12.29Z" /></svg></div><span class="app-label">占位</span></div>
+        </div>
+    </div>
+
+    <!-- 🐾 桌宠设置 APP -->
+    <div class="fullscreen-app" id="petSettingsApp">
+        <div class="app-header">
+            <div class="header-back" onclick="closePetApp()">返回</div>
+            <div class="header-title">桌宠设置</div>
+        </div>
+        <div class="settings-content">
+            <div class="settings-group">
+                <div class="switch-row">
+                    <span>启用桌宠</span>
+                    <div class="toggle-switch" id="petSwitch" onclick="togglePetSwitch()">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="group-title">图片设置 (点击更换)</div>
+            <div class="settings-group">
+                <div class="list-item">
+                    <div class="list-label"><div class="icon-preview" id="preview_pet_normal"></div>正常状态</div>
+                    <button class="btn-upload" onclick="trigger('petNormalInput')">上传</button>
+                    <input type="file" id="petNormalInput" accept="image/*" onchange="PetSystem.saveImage(this, 'normal')">
+                </div>
+                <div class="list-item">
+                    <div class="list-label"><div class="icon-preview" id="preview_pet_drag"></div>拖拽时</div>
+                    <button class="btn-upload" onclick="trigger('petDragInput')">上传</button>
+                    <input type="file" id="petDragInput" accept="image/*" onchange="PetSystem.saveImage(this, 'drag')">
+                </div>
+                <div class="list-item">
+                    <div class="list-label"><div class="icon-preview" id="preview_pet_poke"></div>被戳时</div>
+                    <button class="btn-upload" onclick="trigger('petPokeInput')">上传</button>
+                    <input type="file" id="petPokeInput" accept="image/*" onchange="PetSystem.saveImage(this, 'poke')">
+                </div>
+            </div>
+
+            <div class="group-title">戳戳反应 (时间段对话)</div>
+            <div class="settings-group">
+                <div id="petScheduleList" style="padding: 10px;"></div>
+                <div style="padding: 15px; border-top: 1px solid #eee;">
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="time" id="petStartTime" class="text-input" value="09:00">
+                        <span style="align-self:center">-</span>
+                        <input type="time" id="petEndTime" class="text-input" value="18:00">
+                    </div>
+                    <input type="text" id="petDialogueInput" class="text-input" placeholder="输入一句话 (可多次添加)" style="margin-bottom:10px;">
+                    <button class="btn-mini btn-export" style="width:100%" onclick="PetSystem.addSchedule()">添加对话</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -702,8 +789,255 @@
 
         window.onload = function() {
             try { loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc'); loadSavedImg('save_cover','coverImg',true); loadSavedImg('save_body','bodyBgImg',true); loadSavedImg('save_avatar','avatarImg',false); loadSavedImg('save_square','squareImg',false); setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc'); loadCustomFont(); loadWallpaper(); loadApiSettings(); 
-            const apps=[{key:'save_icon_chat',id:'icon_chat',prev:'preview_chat'},{key:'save_icon_world',id:'icon_world',prev:'preview_world'},{key:'save_icon_interact',id:'icon_interact',prev:'preview_interact'},{key:'save_icon_appearance',id:'icon_appearance',prev:'preview_appearance'},{key:'save_icon_api',id:'icon_api',prev:'preview_api'}]; apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev)); initMockChats(); } catch (e) { console.error(e); }
+            const apps=[{key:'save_icon_chat',id:'icon_chat',prev:'preview_chat'},{key:'save_icon_world',id:'icon_world',prev:'preview_world'},{key:'save_icon_interact',id:'icon_interact',prev:'preview_interact'},{key:'save_icon_appearance',id:'icon_appearance',prev:'preview_appearance'},{key:'save_icon_api',id:'icon_api',prev:'preview_api'}]; apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev)); initMockChats(); 
+            PetSystem.init(); // 🐾 初始化桌宠
+            } catch (e) { console.error(e); }
         };
+
+        /* --- 🐾 桌宠系统 --- */
+        const PetSystem = {
+            el: document.getElementById('desktopPet'),
+            img: document.getElementById('petImg'),
+            bubble: document.getElementById('petBubble'),
+            config: {},
+            isDragging: false,
+            startX: 0, startY: 0, initialLeft: 0, initialTop: 0,
+            pokeTimer: null, bubbleTimer: null,
+            
+            defaultImages: {
+                normal: 'https://via.placeholder.com/100/ffd1dc/fff?text=Pet',
+                drag: 'https://via.placeholder.com/100/aaa/fff?text=Help',
+                poke: 'https://via.placeholder.com/100/ff9eb5/fff?text=OwO'
+            },
+            
+            init() {
+                this.loadConfig();
+                this.renderSettings();
+                
+                // 恢复位置
+                const pos = JSON.parse(localStorage.getItem('pet_position') || '{"x":50, "y":20}');
+                this.el.style.left = pos.x + '%';
+                this.el.style.top = pos.y + '%';
+                
+                if (this.config.enabled) this.el.style.display = 'block';
+                this.updateImage('normal');
+                
+                // 绑定拖拽与点击
+                this.el.addEventListener('touchstart', (e) => this.handleStart(e), {passive: false});
+                this.el.addEventListener('touchmove', (e) => this.handleMove(e), {passive: false});
+                this.el.addEventListener('touchend', (e) => this.handleEnd(e));
+                this.el.addEventListener('mousedown', (e) => this.handleStart(e));
+                document.addEventListener('mousemove', (e) => this.handleMove(e));
+                document.addEventListener('mouseup', (e) => this.handleEnd(e));
+            },
+            
+            loadConfig() {
+                const stored = JSON.parse(localStorage.getItem('pet_config') || '{}');
+                this.config = {
+                    enabled: stored.enabled || false,
+                    images: stored.images || {...this.defaultImages},
+                    schedule: stored.schedule || [{ start: "00:00", end: "23:59", texts: ["戳我干嘛？", "陪我玩！", "OwO"] }]
+                };
+            },
+            
+            saveConfig() {
+                localStorage.setItem('pet_config', JSON.stringify(this.config));
+            },
+            
+            updateImage(state) {
+                const src = this.config.images[state] || this.defaultImages[state];
+                this.img.src = src;
+            },
+            
+            // 交互逻辑
+            handleStart(e) {
+                if (e.type === 'mousedown') e.preventDefault();
+                this.isDragging = false;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                this.startX = clientX;
+                this.startY = clientY;
+                const rect = this.el.getBoundingClientRect();
+                this.initialLeft = rect.left;
+                this.initialTop = rect.top;
+                this.hasMoved = false;
+            },
+            
+            handleMove(e) {
+                if (this.startX === 0 && this.startY === 0) return; // not pressed
+                // 只有按下后移动距离超过阈值才算拖拽
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                if (!this.hasMoved && (Math.abs(clientX - this.startX) > 5 || Math.abs(clientY - this.startY) > 5)) {
+                    this.hasMoved = true;
+                    this.isDragging = true;
+                    this.updateImage('drag');
+                }
+                
+                if (this.isDragging) {
+                    if (e.cancelable) e.preventDefault();
+                    const dx = clientX - this.startX;
+                    const dy = clientY - this.startY;
+                    this.el.style.left = (this.initialLeft + dx) + 'px';
+                    this.el.style.top = (this.initialTop + dy) + 'px';
+                }
+            },
+            
+            handleEnd(e) {
+                this.startX = 0; this.startY = 0;
+                
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    this.updateImage('normal');
+                    // 保存位置百分比以适应不同屏幕
+                    const rect = this.el.getBoundingClientRect();
+                    const x = (rect.left / window.innerWidth) * 100;
+                    const y = (rect.top / window.innerHeight) * 100;
+                    localStorage.setItem('pet_position', JSON.stringify({x, y}));
+                } else if (this.hasMoved === false) {
+                    // 点击/戳一戳
+                    this.poke();
+                }
+            },
+            
+            poke() {
+                this.updateImage('poke');
+                // 震动反馈
+                if(navigator.vibrate) navigator.vibrate(50);
+                
+                // 说话
+                const now = new Date();
+                const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+                let validTexts = [];
+                
+                this.config.schedule.forEach(item => {
+                    if (timeStr >= item.start && timeStr <= item.end) {
+                        validTexts = validTexts.concat(item.texts);
+                    }
+                });
+                
+                if (validTexts.length === 0) validTexts = ["..."];
+                const text = validTexts[Math.floor(Math.random() * validTexts.length)];
+                
+                this.showBubble(text);
+                
+                if (this.pokeTimer) clearTimeout(this.pokeTimer);
+                this.pokeTimer = setTimeout(() => {
+                    this.updateImage('normal');
+                }, 2000);
+            },
+            
+            showBubble(text) {
+                this.bubble.innerText = text;
+                this.bubble.classList.add('active');
+                if (this.bubbleTimer) clearTimeout(this.bubbleTimer);
+                this.bubbleTimer = setTimeout(() => {
+                    this.bubble.classList.remove('active');
+                }, 3000);
+            },
+            
+            // 设置界面逻辑
+            renderSettings() {
+                const sw = document.getElementById('petSwitch');
+                if (this.config.enabled) sw.classList.add('active');
+                else sw.classList.remove('active');
+                
+                ['normal', 'drag', 'poke'].forEach(state => {
+                    const preview = document.getElementById('preview_pet_' + state);
+                    if (preview) preview.innerHTML = `<img src="${this.config.images[state] || this.defaultImages[state]}">`;
+                });
+                
+                this.renderSchedule();
+            },
+            
+            renderSchedule() {
+                const list = document.getElementById('petScheduleList');
+                list.innerHTML = '';
+                this.config.schedule.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.style.cssText = "background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:10px; margin-bottom:8px; position:relative;";
+                    div.innerHTML = `
+                        <div style="font-weight:bold; color:#007aff; font-size:14px; margin-bottom:5px;">${item.start} - ${item.end}</div>
+                        <div style="font-size:12px; color:#555;">${item.texts.join(' / ')}</div>
+                        <div style="position:absolute; top:10px; right:10px; color:red; cursor:pointer;" onclick="PetSystem.deleteSchedule(${index})">×</div>
+                    `;
+                    list.appendChild(div);
+                });
+            },
+            
+            saveImage(input, state) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const c = document.createElement('canvas');
+                            const ctx = c.getContext('2d');
+                            // 桌宠图片不需要太大，限制200px
+                            let w=img.width, h=img.height;
+                            if(w>200){h*=200/w;w=200;} else if(h>200){w*=200/h;h=200;}
+                            c.width=w; c.height=h;
+                            ctx.drawImage(img,0,0,w,h);
+                            const url = c.toDataURL('image/png');
+                            this.config.images[state] = url;
+                            this.saveConfig();
+                            this.renderSettings();
+                            this.updateImage('normal'); // 刷新显示
+                            showToast("图片已更新");
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                    input.value = '';
+                }
+            },
+            
+            addSchedule() {
+                const start = document.getElementById('petStartTime').value;
+                const end = document.getElementById('petEndTime').value;
+                const textInput = document.getElementById('petDialogueInput');
+                const text = textInput.value.trim();
+                
+                if (!start || !end || !text) return showToast("请填写完整");
+                
+                // 查找是否已有完全相同时间段
+                let existing = this.config.schedule.find(s => s.start === start && s.end === end);
+                if (existing) {
+                    existing.texts.push(text);
+                } else {
+                    this.config.schedule.push({ start, end, texts: [text] });
+                }
+                
+                this.saveConfig();
+                this.renderSchedule();
+                textInput.value = '';
+                showToast("对话已添加");
+            },
+            
+            deleteSchedule(index) {
+                if (confirm("删除这个时间段设置？")) {
+                    this.config.schedule.splice(index, 1);
+                    this.saveConfig();
+                    this.renderSchedule();
+                }
+            }
+        };
+
+        function openPetApp() {
+            PetSystem.renderSettings();
+            document.getElementById('petSettingsApp').classList.add('active');
+            document.getElementById('desktop').classList.add('pushed');
+        }
+        function closePetApp() {
+            document.getElementById('petSettingsApp').classList.remove('active');
+            document.getElementById('desktop').classList.remove('pushed');
+        }
+        function togglePetSwitch() {
+            PetSystem.config.enabled = !PetSystem.config.enabled;
+            PetSystem.saveConfig();
+            PetSystem.renderSettings();
+            document.getElementById('desktopPet').style.display = PetSystem.config.enabled ? 'block' : 'none';
+        }
 
         /* Worldbook */
         function openWorldbookApp() { document.getElementById('worldbookApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); renderWorldbookList(); }
