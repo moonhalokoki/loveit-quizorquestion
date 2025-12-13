@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Kawaii OS</title>
+    <title>Kawaii OS - Ultimate Backup</title>
     <link rel="apple-touch-icon" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
     <link rel="icon" type="image/jpg" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
     <style>
@@ -29,7 +29,7 @@
             background: linear-gradient(180deg, #fff5f8 0%, #ffeaf3 100%);
             background-size: cover; background-position: center; background-attachment: fixed;
             font-family: var(--main-font);
-            font-size: 20px;
+            font-size: 16px;
             height: 100vh; overflow: hidden; color: #666;
             display: flex; flex-direction: column; position: relative;
         }
@@ -44,8 +44,7 @@
         .container {
             width: 100%; height: 100%; display: flex; flex-direction: column;
             padding: 20px 24px;
-            /* 🔥 整体上移：减小顶部的 padding */
-            padding-top: calc(50px + env(safe-area-inset-top)); 
+            padding-top: calc(80px + env(safe-area-inset-top)); 
             padding-bottom: calc(10px + env(safe-area-inset-bottom));
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
@@ -58,90 +57,57 @@
         }
 
         /* 桌面组件 */
-        /* 🔥 调回原来的比例，不再傻大个 */
-        .home-widget { 
-            height: 33vh; /* 恢复到接近图1的比例 */
-            min-height: 280px; 
-            margin-bottom: 30px; /* 减小下边距，让整体更紧凑 */
-            width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; 
-        }
-        .widget-cover { height: 42%; width: 100%; background: rgba(255, 183, 206, 0.3); position: relative; cursor: pointer; }
+        .home-widget { height: 32vh; margin-bottom: 60px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; }
+        .widget-cover { height: 45%; width: 100%; background: rgba(255, 183, 206, 0.3); position: relative; cursor: pointer; }
         .widget-cover img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .cover-hint { position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 10px; color:rgba(255,255,255,0.8); pointer-events: none; }
-        
-        /* 🔥 内部紧凑布局：通过减少 padding 和 margin 把字塞进去，而不是加高组件 */
-        .widget-body { 
-            height: 58%; width: 100%; position: relative; 
-            display: flex; flex-direction: column; align-items: center; 
-            padding-top: 40px; /* 减少顶部留白，把内容往上提 */
-            cursor: pointer; 
-        }
+        .widget-body { height: 55%; width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 45px; cursor: pointer; }
         .widget-body-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.5; z-index: 0; pointer-events: none; }
-        
-        .avatar-wrapper { 
-            position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); 
-            width: 80px; height: 80px; /* 头像稍微改小一丢丢显得更精致 */
-            border-radius: 50%; background: #fff; padding: 3px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); z-index: 5; cursor: pointer; 
-        }
+        .avatar-wrapper { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 86px; height: 86px; border-radius: 50%; background: #fff; padding: 3px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); z-index: 5; cursor: pointer; }
         .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        
         .info-content { z-index: 2; text-align: center; width: 90%; }
-        /* 文字排版紧凑化 */
-        .user-name { font-size: 18px; font-weight: 800; margin-bottom: 2px; color: #444; line-height: 1.2; }
-        .bio-text { font-size: 13px; margin: 1px 0; opacity: 0.9; line-height: 1.3; } /* 缩小字号和行距 */
-        .tag-pill { 
-            display: inline-block; background: rgba(255,255,255,0.8); 
-            padding: 3px 10px; border-radius: 12px; font-size: 10px; 
-            margin-top: 4px; /* 紧贴上方文字 */
-            color: #ff9eb5; font-weight: bold; 
-        }
-        
+        .user-name { font-size: 18px; font-weight: 800; margin-bottom: 2px; color: #444; }
+        .bio-text { font-size: 14px; margin: 2px 0; opacity: 0.9; }
+        .tag-pill { display: inline-block; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-top: -8px; color: #ff9eb5; font-weight: bold; }
         .top-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; cursor: pointer; }
         
-        .middle-row { 
-            display: flex; gap: 16px; width: 100%; 
-            margin-bottom: auto; padding-bottom: 40px;
-            align-items: center; 
-        }
-        .square-widget { 
-            flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); 
-            display: flex; align-items: center; justify-content: center;
-        }
+        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: auto; padding-bottom: 50px }
+        .square-widget { flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); }
         .square-widget img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
         .app-grid { flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 4px; }
         .app-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .app-item:active { transform: scale(0.95); transition: 0.1s; }
         
         .app-icon { 
-            width: 52px; height: 52px; /* 图标稍微微调小一点点让比例更好看 */
+            width: 56px; height: 56px; 
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 18px; 
+            border-radius: 20px; 
             display: flex; align-items: center; justify-content: center; 
             box-shadow: 0 4px 12px rgba(255, 183, 206, 0.3); 
-            margin-bottom: 4px; overflow: hidden; 
+            margin-bottom: 6px; overflow: hidden; 
         }
         .app-icon img { width: 100%; height: 100%; object-fit: cover; }
         .app-label { font-size: 13px; font-weight: 600; color: #777; }
-        .svg-icon { width: 24px; height: 24px; fill: #ffb7ce; }
+        .svg-icon { width: 26px; height: 26px; fill: #ffb7ce; }
         
+        /* 🔥 Dock 栏位置调整 */
         .dock { 
-            height: 100px; /* Dock栏高度微调 */
+            height: 110px; 
             border-radius: 40px; 
             display: flex; justify-content: space-evenly; align-items: center; 
             padding: 0 10px; flex-shrink: 0; 
             margin-top: auto; 
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .dock-app { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
         .dock-box { 
-            width: 52px; height: 52px; 
+            width: 56px; height: 56px; 
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 18px; 
+            border-radius: 20px; 
             display: flex; align-items: center; justify-content: center; 
             margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); overflow: hidden; 
         }
@@ -666,11 +632,6 @@
                         <div class="toggle-thumb"></div>
                     </div>
                 </div>
-                <!-- 🔥 新增: 调节大小 -->
-                <div class="list-item" style="flex-direction: column; align-items: flex-start;">
-                    <div style="margin-bottom: 5px;">大小调节</div>
-                    <input type="range" min="50" max="300" step="10" style="width: 100%; accent-color: var(--primary-color);" id="petSizeSlider" oninput="PetSystem.updateSize(this.value)">
-                </div>
             </div>
 
             <div class="group-title">图片设置 (点击更换)</div>
@@ -858,11 +819,6 @@
                 this.el.style.left = pos.x + '%';
                 this.el.style.top = pos.y + '%';
                 
-                // 恢复大小
-                const size = this.config.size || 100;
-                this.el.style.width = size + 'px';
-                this.el.style.height = size + 'px';
-                
                 if (this.config.enabled) this.el.style.display = 'block';
                 this.updateImage('normal');
                 
@@ -879,7 +835,6 @@
                 const stored = JSON.parse(localStorage.getItem('pet_config') || '{}');
                 this.config = {
                     enabled: stored.enabled || false,
-                    size: stored.size || 100, // 默认大小 100
                     images: stored.images || {...this.defaultImages},
                     schedule: stored.schedule || [{ start: "00:00", end: "23:59", texts: ["戳我干嘛？", "陪我玩！", "OwO"] }]
                 };
@@ -887,13 +842,6 @@
             
             saveConfig() {
                 localStorage.setItem('pet_config', JSON.stringify(this.config));
-            },
-            
-            updateSize(val) {
-                this.config.size = val;
-                this.el.style.width = val + 'px';
-                this.el.style.height = val + 'px';
-                this.saveConfig();
             },
             
             updateImage(state) {
@@ -993,8 +941,6 @@
                 const sw = document.getElementById('petSwitch');
                 if (this.config.enabled) sw.classList.add('active');
                 else sw.classList.remove('active');
-                
-                document.getElementById('petSizeSlider').value = this.config.size || 100;
                 
                 ['normal', 'drag', 'poke'].forEach(state => {
                     const preview = document.getElementById('preview_pet_' + state);
