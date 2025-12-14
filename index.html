@@ -71,7 +71,7 @@
         .tag-pill { display: inline-block; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-top: -12px; color: #ff9eb5; font-weight: bold; }
         .top-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; cursor: pointer; }
         
-        /* 中间行 */
+        /* Middle Row */
         .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: auto; padding-bottom: 50px; align-items: center; }
         .square-widget { flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); height: auto; width: 100%; }
         .square-widget img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
@@ -92,7 +92,7 @@
         input[type="file"] { display: none; }
         [contenteditable]:focus { outline: none; background: rgba(255,255,255,0.5); }
 
-        /* --- 全屏 APP --- */
+        /* --- Fullscreen APP --- */
         .fullscreen-app {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #f2f2f7; z-index: 2000;
@@ -110,7 +110,7 @@
         #interactSettingsApp { z-index: 2200; background: #fff; } 
         #petSettingsApp { z-index: 2300; background: #f2f2f7; }
         
-        /* 聊天设置弹窗 */
+        /* Chat Settings Overlay */
         #chatSettingsOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 3000;
@@ -168,7 +168,7 @@
         .btn-import { background: #e8f5e9; color: #43a047; }
         .btn-clear { background: #ffebee; color: #e53935; }
 
-        /* --- 📚 世界书特有样式 --- */
+        /* --- Worldbook --- */
         .wb-grid { display: grid; gap: 15px; }
         .wb-card { background: #f9f9f9; padding: 15px; border-radius: 16px; border: 1px solid #eee; display:flex; flex-direction:column; gap:10px; position: relative; }
         .wb-header { display:flex; flex-direction:column; gap: 5px; }
@@ -195,12 +195,10 @@
         .checkbox-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
         .checkbox-item input { margin-right: 10px; accent-color: var(--primary-color); }
 
-        /* --- 💬 聊天列表 & 左滑删除 --- */
+        /* --- Chat List & Swipe --- */
         .chat-list-container, .friend-list-container { flex: 1; overflow-y: auto; background: #fff; overflow-x: hidden; width: 100%; }
         
-        .chat-swipe-wrapper { 
-            position: relative; overflow: hidden; border-bottom: 1px solid #f9f9f9; height: 74px; width: 100%;
-        }
+        .chat-swipe-wrapper { position: relative; overflow: hidden; border-bottom: 1px solid #f9f9f9; height: 74px; width: 100%; }
         .chat-delete-action {
             position: absolute; top: 0; right: 0; bottom: 0; width: 80px;
             background: var(--danger-color); color: white;
@@ -215,7 +213,6 @@
             cursor: pointer;
         }
         .chat-item:active { background: #f2f2f7; }
-        /* 左滑状态 */
         .chat-item.swiped { transform: translateX(-80px); }
 
         .chat-avatar { width: 50px; height: 50px; border-radius: 50%; background: #eee; margin-right: 12px; flex-shrink: 0; overflow: hidden; }
@@ -232,7 +229,7 @@
         .nav-tab.active { color: var(--primary-color); }
         .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; fill: currentColor; }
 
-        /* --- 🗨️ 聊天窗口 --- */
+        /* --- Chat Window --- */
         .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background-size: cover; background-position: center; padding-bottom: 20px; }
         
         .msg-row { display: flex; align-items: flex-start; margin-bottom: 5px; animation: fadeIn 0.3s ease; position: relative; }
@@ -315,7 +312,7 @@
         .btn-ai { background: #ff9eb5; box-shadow: 0 2px 5px rgba(255,158,181,0.4); }
         .btn-send { background: var(--primary-color); box-shadow: 0 2px 5px rgba(0,122,255,0.4); }
 
-        /* --- 🆔 资料卡 --- */
+        /* --- Profile --- */
         .profile-container { height: 100%; overflow-y: auto; background: #fff; padding-bottom: 20px; }
         .profile-cover { height: 260px; width: 100%; background: #ccc; position: relative; overflow: hidden; }
         .profile-cover img { width: 100%; height: 100%; object-fit: cover; }
@@ -388,11 +385,55 @@
         .vn-btn-toggle-input { position: absolute; right: 10px; top: calc(25px + env(safe-area-inset-top)); width: 30px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; }
         .vn-history-btn { position: absolute; right: 20px; bottom: 100px; width: 40px; height: 40px; background: rgba(255,255,255,0.8); border-radius: 50%; color: #333; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: auto; z-index: 15; }
 
-        #vnHistoryPanel { position: absolute; top: 0; right: 0; width: 80%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 30; transform: translateX(100%); transition: transform 0.3s; padding: 20px; overflow-y: auto; color: white; pointer-events: auto; }
+        /* 🔥 修改历史记录面板样式：顶部距离增加 */
+        #vnHistoryPanel { 
+            position: absolute; top: 0; right: 0; width: 80%; height: 100%; 
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); 
+            z-index: 30; transform: translateX(100%); transition: transform 0.3s; 
+            padding: 20px; padding-top: calc(40px + env(safe-area-inset-top)); /* 增加顶部边距 */
+            overflow-y: auto; color: white; pointer-events: auto; 
+        }
         #vnHistoryPanel.active { transform: translateX(0); }
+        .vn-hist-close { text-align:right; margin-bottom:20px; cursor:pointer; font-size: 14px; padding: 10px; color: #ccc; }
         .vn-hist-item { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .vn-hist-name { font-weight: bold; color: #ff9eb5; font-size: 12px; margin-bottom: 4px; }
         .vn-hist-content { font-size: 14px; line-height: 1.4; }
+
+        /* 🔥 触摸系统样式 */
+        /* 编辑器 */
+        .touch-editor-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #222; z-index: 2500; display: none; flex-direction: column;
+        }
+        .touch-editor-container.active { display: flex; }
+        .touch-canvas { flex: 1; position: relative; background: #333; overflow: hidden; display:flex; justify-content:center; }
+        .touch-canvas img { height: 90%; position: absolute; bottom: 0; pointer-events: none; opacity: 0.8; }
+        
+        .touch-box {
+            position: absolute; border: 2px solid var(--primary-color); background: rgba(0,122,255,0.2);
+            color: white; font-size: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; text-shadow: 0 1px 2px black; touch-action: none; box-sizing: border-box;
+        }
+        .touch-box.selected { border-color: yellow; background: rgba(255,255,0,0.2); z-index: 100; }
+        .touch-handle {
+            position: absolute; bottom: -10px; right: -10px; width: 25px; height: 25px;
+            background: #fff; border: 2px solid var(--primary-color); border-radius: 50%;
+            z-index: 101; touch-action: none;
+        }
+        
+        .touch-controls { height: 220px; background: #fff; padding: 15px; display: flex; flex-direction: column; border-top-left-radius: 20px; border-top-right-radius: 20px; }
+        .touch-layer-list { flex: 1; overflow-y: auto; margin-bottom: 10px; border: 1px solid #eee; border-radius: 8px; }
+        .layer-item { padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; background: #fff; }
+        .layer-item.active { background: #e3f2fd; }
+        .layer-btn { padding: 4px 10px; border-radius: 5px; background: #f0f0f0; font-size: 12px; margin-left: 5px; }
+
+        /* 实际运行时的触摸层 */
+        #vnTouchLayer {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; height: 90%; bottom: 0; z-index: 5; /* 在立绘之上，UI之下 */
+            pointer-events: auto; display: none; /* JS控制宽高和显示 */
+        }
+        .vn-touch-area { position: absolute; /* debug: border:1px solid red; */ cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
         /* 模态弹窗通用 */
         #custom-modal-overlay, #sprite-upload-overlay, #worldbook-select-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); z-index: 9999; display: none; align-items: center; justify-content: center; }
@@ -525,6 +566,30 @@
             <button class="btn-mini" style="width:100%; background:#f0f0f0;" onclick="closeChatSettings()">关闭</button>
         </div>
     </div>
+    
+    <!-- ✨ 触摸编辑器 -->
+    <div class="touch-editor-container" id="touchEditor">
+        <div class="touch-canvas" id="touchCanvas">
+            <img id="touchEditSprite" src="">
+            <!-- 触摸区域JS生成 -->
+        </div>
+        <div class="touch-controls">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-weight:bold;">触摸区域 (点击选中，长按图层拖动无效请用按钮)</span>
+                <div>
+                    <button class="btn-mini" style="padding:5px 10px; background:#e8f5e9; color:green;" onclick="TouchSystem.addArea()">+ 添加</button>
+                    <button class="btn-mini" style="padding:5px 10px; background:#ffebee; color:red;" onclick="TouchSystem.deleteSelected()">删除</button>
+                </div>
+            </div>
+            <div class="touch-layer-list" id="touchLayerList">
+                <!-- 列表 -->
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-mini" style="flex:1; background:#f0f0f0;" onclick="TouchSystem.close()">取消</button>
+                <button class="btn-mini btn-export" style="flex:1;" onclick="TouchSystem.save()">保存</button>
+            </div>
+        </div>
+    </div>
 
     <div id="toast">保存成功</div>
 
@@ -553,7 +618,11 @@
         <div class="vn-container">
             <img class="vn-bg" id="vnBg" src="https://via.placeholder.com/400x800/222/fff?text=BG">
             <img class="vn-tachie" id="vnTachie" src="https://via.placeholder.com/300x600/transparent/fff?text=Character">
-            <div id="vnHistoryPanel"><div style="text-align:right;margin-bottom:20px;cursor:pointer;" onclick="document.getElementById('vnHistoryPanel').classList.remove('active')">✖ 关闭</div><div id="vnHistoryContent"></div></div>
+            <div id="vnTouchLayer"></div> <!-- 🔥 触摸触发层 -->
+            <div id="vnHistoryPanel">
+                <div class="vn-hist-close" onclick="document.getElementById('vnHistoryPanel').classList.remove('active')">✖ 关闭</div>
+                <div id="vnHistoryContent"></div>
+            </div>
             <div class="vn-ui-layer">
                 <div class="vn-btn vn-btn-back" onclick="closeInteractApp()">‹</div>
                 <div class="vn-btn vn-btn-hide" onclick="toggleDialogue()">👁️</div>
@@ -580,6 +649,13 @@
             <div class="settings-group"><div class="list-item" style="display:block;"><div class="asset-grid" id="vnBgGrid"></div><button class="btn-upload" style="width:100%;margin-top:10px;" onclick="trigger('vnBgInput')">➕ 添加新背景</button></div></div>
             <div class="group-title">角色立绘</div>
             <div class="settings-group"><div class="list-item" style="display:block;"><div class="asset-grid" id="vnSpriteGrid"></div><button class="btn-upload" style="width:100%;margin-top:10px;" onclick="trigger('vnTachieInput')">➕ 添加新立绘</button></div></div>
+            <div class="group-title">互动设置</div>
+            <div class="settings-group">
+                <div class="list-item" onclick="TouchSystem.open()" style="cursor:pointer;">
+                    <div class="list-label">✋ 触摸区域编辑器</div>
+                    <span style="color:#999;">进入编辑 ›</span>
+                </div>
+            </div>
             <div class="group-title">自动作息表 (时间/地点/服装)</div>
             <div class="settings-group">
                 <div class="list-item" style="flex-direction:column; align-items:stretch;">
@@ -821,6 +897,192 @@
             } catch (e) { console.error(e); }
         };
 
+        /* --- ✋ 触摸互动系统 --- */
+        const TouchSystem = {
+            config: [],
+            editor: document.getElementById('touchEditor'),
+            canvas: document.getElementById('touchCanvas'),
+            sprite: document.getElementById('touchEditSprite'),
+            list: document.getElementById('touchLayerList'),
+            selectedId: null,
+            
+            open() {
+                if(!interactId) return;
+                this.loadConfig();
+                // 加载当前立绘预览
+                const assetsKey = 'chat_vn_assets_' + interactId;
+                const data = JSON.parse(localStorage.getItem(assetsKey) || '{"sprites":[]}');
+                const s = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || data.sprites[0];
+                if(s) this.sprite.src = s.url;
+                else this.sprite.src = '';
+                
+                this.editor.classList.add('active');
+                this.renderCanvas();
+                this.renderList();
+            },
+            
+            close() { this.editor.classList.remove('active'); },
+            
+            loadConfig() {
+                const key = 'chat_vn_touch_' + interactId;
+                this.config = JSON.parse(localStorage.getItem(key) || '[]');
+            },
+            
+            save() {
+                const key = 'chat_vn_touch_' + interactId;
+                localStorage.setItem(key, JSON.stringify(this.config));
+                showToast("触摸设置已保存");
+                this.close();
+                // 如果正在互动，立即应用
+                if(activeChatId === interactId) updateInteractDisplay();
+            },
+            
+            addArea() {
+                const name = prompt("输入区域名称 (如: 脸, 手, 胸)");
+                if(!name) return;
+                const id = 't_' + Date.now();
+                this.config.push({
+                    id: id, name: name,
+                    x: 40, y: 30, w: 20, h: 10, z: this.config.length + 1
+                });
+                this.selectedId = id;
+                this.renderCanvas();
+                this.renderList();
+            },
+            
+            deleteSelected() {
+                if(!this.selectedId) return;
+                this.config = this.config.filter(c => c.id !== this.selectedId);
+                this.selectedId = null;
+                this.renderCanvas();
+                this.renderList();
+            },
+            
+            moveLayer(index, dir) {
+                if(dir === -1 && index > 0) {
+                    [this.config[index], this.config[index-1]] = [this.config[index-1], this.config[index]];
+                } else if (dir === 1 && index < this.config.length - 1) {
+                    [this.config[index], this.config[index+1]] = [this.config[index+1], this.config[index]];
+                }
+                this.renderList();
+                this.renderCanvas(); // z-index 更新
+            },
+
+            renderList() {
+                this.list.innerHTML = '';
+                // 倒序显示，上面的是顶层
+                [...this.config].reverse().forEach((area, revIndex) => {
+                    const realIndex = this.config.length - 1 - revIndex;
+                    const div = document.createElement('div');
+                    div.className = `layer-item ${area.id === this.selectedId ? 'active' : ''}`;
+                    div.innerHTML = `
+                        <span>${area.name}</span>
+                        <div>
+                            <span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, -1)">▲</span>
+                            <span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, 1)">▼</span>
+                        </div>
+                    `;
+                    div.onclick = (e) => {
+                        if(e.target.classList.contains('layer-btn')) return;
+                        this.selectedId = area.id;
+                        this.renderCanvas();
+                        this.renderList();
+                    };
+                    this.list.appendChild(div);
+                });
+            },
+            
+            renderCanvas() {
+                // 清除旧的box
+                const old = this.canvas.querySelectorAll('.touch-box');
+                old.forEach(o => o.remove());
+                
+                this.config.forEach(area => {
+                    const box = document.createElement('div');
+                    box.className = `touch-box ${area.id === this.selectedId ? 'selected' : ''}`;
+                    box.innerText = area.name;
+                    box.style.left = area.x + '%';
+                    box.style.top = area.y + '%';
+                    box.style.width = area.w + '%';
+                    box.style.height = area.h + '%';
+                    // z-index 并不是真的CSS z-index，而是数组顺序，这里简单处理
+                    
+                    // 绑定拖拽事件
+                    this.attachDrag(box, area);
+                    
+                    if(area.id === this.selectedId) {
+                        const handle = document.createElement('div');
+                        handle.className = 'touch-handle';
+                        this.attachResize(handle, area);
+                        box.appendChild(handle);
+                    }
+                    
+                    // 点击选中
+                    box.addEventListener('touchstart', (e) => {
+                        if(e.target !== box) return; // ignore handle
+                        this.selectedId = area.id;
+                        this.renderCanvas();
+                        this.renderList();
+                    }, {passive: false});
+                    
+                    this.canvas.appendChild(box);
+                });
+            },
+            
+            attachDrag(el, area) {
+                let startX, startY, startLeft, startTop, cw, ch;
+                el.addEventListener('touchstart', (e) => {
+                    if(e.target !== el) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    cw = this.canvas.clientWidth;
+                    ch = this.canvas.clientHeight;
+                    startLeft = area.x;
+                    startTop = area.y;
+                }, {passive: false});
+                
+                el.addEventListener('touchmove', (e) => {
+                    if(e.target !== el) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const dx = (touch.clientX - startX) / cw * 100;
+                    const dy = (touch.clientY - startY) / ch * 100;
+                    area.x = startLeft + dx;
+                    area.y = startTop + dy;
+                    el.style.left = area.x + '%';
+                    el.style.top = area.y + '%';
+                }, {passive: false});
+            },
+            
+            attachResize(el, area) {
+                let startX, startY, startW, startH, cw, ch;
+                el.addEventListener('touchstart', (e) => {
+                    e.stopPropagation(); e.preventDefault();
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    cw = this.canvas.clientWidth;
+                    ch = this.canvas.clientHeight;
+                    startW = area.w;
+                    startH = area.h;
+                }, {passive: false});
+                
+                el.addEventListener('touchmove', (e) => {
+                    e.stopPropagation(); e.preventDefault();
+                    const touch = e.touches[0];
+                    const dx = (touch.clientX - startX) / cw * 100;
+                    const dy = (touch.clientY - startY) / ch * 100;
+                    area.w = Math.max(5, startW + dx);
+                    area.h = Math.max(5, startH + dy);
+                    el.parentElement.style.width = area.w + '%';
+                    el.parentElement.style.height = area.h + '%';
+                }, {passive: false});
+            }
+        };
+
+
         /* --- 🐾 桌宠系统 --- */
         const PetSystem = {
             el: document.getElementById('desktopPet'),
@@ -907,13 +1169,101 @@
         /* Interact Mode */
         function openInteractSelector() { const list = JSON.parse(localStorage.getItem('chat_list_data') || '[]'); const container = document.getElementById('interactList'); container.innerHTML = ''; if(list.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center;">没有好友</div>'; } else { list.forEach(c => { const item = document.createElement('div'); item.className = 'selector-item'; item.innerHTML = `<img class="selector-avatar" src="${c.avatar}"><span class="selector-name">${c.name}</span>`; item.onclick = () => startInteraction(c.id, c.name); container.appendChild(item); }); } document.getElementById('interactSelector').classList.add('active'); }
         function closeInteractSelector() { document.getElementById('interactSelector').classList.remove('active'); }
-        function startInteraction(id, name) { interactId = id; activeChatId = id; closeInteractSelector(); document.getElementById('interactApp').classList.add('active'); const assetsKey = 'chat_vn_assets_' + id; if(!localStorage.getItem(assetsKey)) localStorage.setItem(assetsKey, JSON.stringify({ backgrounds: [], sprites: [] })); const data = JSON.parse(localStorage.getItem(assetsKey)); if(data.sprites.length > 0) { vnState.outfit = data.sprites[0].outfit || 'default'; vnState.face = 'normal'; } else { vnState.outfit = 'default'; vnState.face = 'normal'; } const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); const bgItem = data.backgrounds.find(b => b.url === profile.interact_bg); vnState.bgName = bgItem ? bgItem.name : ''; updateInteractDisplay(); document.getElementById('vnName').innerText = name; vnQueue = ["点击屏幕推进剧情...", "右上角可切换输入模式。"]; nextVnLine(); startScheduleTimer(); }
-        function updateInteractDisplay() { const assetsKey = 'chat_vn_assets_' + interactId; const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); const bgEl = document.getElementById('vnBg'); if(bgEl) bgEl.src = profile.interact_bg || 'https://via.placeholder.com/400x800/222/fff?text=No+Background'; let targetSprite = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || data.sprites.find(s => s.outfit === vnState.outfit && s.face === 'normal') || data.sprites.find(s => s.outfit === vnState.outfit) || data.sprites[0]; const tachieEl = document.getElementById('vnTachie'); if(tachieEl) tachieEl.src = targetSprite ? targetSprite.url : 'https://via.placeholder.com/300x600/transparent/fff?text=No+Sprite'; }
+        
+        function startInteraction(id, name) { 
+            interactId = id; activeChatId = id; 
+            closeInteractSelector(); 
+            document.getElementById('interactApp').classList.add('active'); 
+            const assetsKey = 'chat_vn_assets_' + id; 
+            if(!localStorage.getItem(assetsKey)) localStorage.setItem(assetsKey, JSON.stringify({ backgrounds: [], sprites: [] })); 
+            const data = JSON.parse(localStorage.getItem(assetsKey)); 
+            if(data.sprites.length > 0) { vnState.outfit = data.sprites[0].outfit || 'default'; vnState.face = 'normal'; } else { vnState.outfit = 'default'; vnState.face = 'normal'; } 
+            const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
+            const bgItem = data.backgrounds.find(b => b.url === profile.interact_bg); vnState.bgName = bgItem ? bgItem.name : ''; 
+            updateInteractDisplay(); 
+            document.getElementById('vnName').innerText = name; 
+            vnQueue = ["点击屏幕推进剧情...", "右上角可切换输入模式。"]; 
+            nextVnLine(); 
+            startScheduleTimer(); 
+        }
+        
+        function updateInteractDisplay() { 
+            const assetsKey = 'chat_vn_assets_' + interactId; 
+            const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
+            const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
+            const bgEl = document.getElementById('vnBg'); 
+            if(bgEl) bgEl.src = profile.interact_bg || 'https://via.placeholder.com/400x800/222/fff?text=No+Background'; 
+            let targetSprite = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || data.sprites.find(s => s.outfit === vnState.outfit && s.face === 'normal') || data.sprites.find(s => s.outfit === vnState.outfit) || data.sprites[0]; 
+            const tachieEl = document.getElementById('vnTachie'); 
+            if(tachieEl) tachieEl.src = targetSprite ? targetSprite.url : 'https://via.placeholder.com/300x600/transparent/fff?text=No+Sprite'; 
+            
+            // Render runtime touch areas
+            renderTouchOverlays();
+        }
+
+        // --- 运行时触摸层渲染 ---
+        function renderTouchOverlays() {
+            const touchKey = 'chat_vn_touch_' + interactId;
+            const areas = JSON.parse(localStorage.getItem(touchKey) || '[]');
+            const layer = document.getElementById('vnTouchLayer');
+            layer.innerHTML = '';
+            
+            // 如果没有设置区域，不显示
+            if(areas.length === 0) {
+                layer.style.display = 'none';
+                return;
+            }
+            layer.style.display = 'block';
+
+            // 按配置顺序渲染 (后面的是顶层)
+            areas.forEach(area => {
+                const div = document.createElement('div');
+                div.className = 'vn-touch-area';
+                div.style.left = area.x + '%';
+                div.style.top = area.y + '%';
+                div.style.width = area.w + '%';
+                div.style.height = area.h + '%';
+                div.onclick = (e) => {
+                    e.stopPropagation(); // 防止点穿到底部对话框
+                    handleTouchTrigger(area.name);
+                };
+                layer.appendChild(div);
+            });
+        }
+        
+        function handleTouchTrigger(areaName) {
+            // 触发震动
+            if(navigator.vibrate) navigator.vibrate(20);
+            showToast(`触摸了: ${areaName}`);
+            // 发送隐形系统指令给AI
+            const prompt = `[Action: User touched your ${areaName}. React based on current context and mood.]`;
+            triggerVnAi(null, true, prompt);
+        }
+
         function closeInteractApp() { document.getElementById('interactApp').classList.remove('active'); activeChatId = null; stopScheduleTimer(); }
         function toggleDialogue() { document.getElementById('vnTextbox').classList.toggle('hidden'); }
         document.getElementById('vnTextbox').onclick = function(e) { if(isVnInputMode) return; nextVnLine(); };
-        function toggleVnInput(e) { e.stopPropagation(); isVnInputMode = !isVnInputMode; const wrap = document.getElementById('vnInputWrapper'); const toggle = document.getElementById('vnToggleBtn'); if(isVnInputMode) { wrap.classList.add('active'); toggle.innerText = '❌'; document.getElementById('vnTextContent').style.display = 'none'; document.getElementById('vnInput').focus(); } else { wrap.classList.remove('active'); toggle.innerText = '⌨️'; document.getElementById('vnTextContent').style.display = 'block'; } }
-        function sendVnUserMessage(e) { if(e) e.stopPropagation(); const input = document.getElementById('vnInput'); const text = input.value.trim(); if(!text) return; const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); const msg = { role: 'user', type: 'text', content: text, time: time }; saveChatMessage(interactId, msg); input.value = ''; document.getElementById('vnName').innerText = '我'; document.getElementById('vnTextContent').innerText = text; toggleVnInput(new Event('mock')); }
+        function toggleVnInput(e) { if(e) e.stopPropagation(); isVnInputMode = !isVnInputMode; const wrap = document.getElementById('vnInputWrapper'); const toggle = document.getElementById('vnToggleBtn'); if(isVnInputMode) { wrap.classList.add('active'); toggle.innerText = '❌'; document.getElementById('vnTextContent').style.display = 'none'; document.getElementById('vnInput').focus(); } else { wrap.classList.remove('active'); toggle.innerText = '⌨️'; document.getElementById('vnTextContent').style.display = 'block'; } }
+        
+        function sendVnUserMessage(e) { 
+            if(e) e.stopPropagation(); 
+            const input = document.getElementById('vnInput'); 
+            const text = input.value.trim(); 
+            if(!text) return; 
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); 
+            const msg = { role: 'user', type: 'text', content: text, time: time }; 
+            saveChatMessage(interactId, msg); 
+            input.value = ''; 
+            document.getElementById('vnName').innerText = '我'; 
+            document.getElementById('vnTextContent').innerText = text; 
+            
+            // 🔥 自动切回对话框模式
+            toggleVnInput(); 
+            
+            // 触发AI回复 (mock event for triggerVnAi)
+            triggerVnAi(null, true); 
+        }
+        
         function nextVnLine() { if(vnQueue.length > 0) { let line = vnQueue.shift(); const faceMatch = line.match(/\(face:\s*(\w+)\)/i); if(faceMatch) { vnState.face = faceMatch[1].toLowerCase(); line = line.replace(faceMatch[0], '').trim(); updateInteractDisplay(); } if (!line) { if (vnQueue.length > 0) nextVnLine(); return; } document.getElementById('vnTextContent').innerText = line; } else { showToast("待机中..."); } }
         function showVnHistory() { const panel = document.getElementById('vnHistoryPanel'); const content = document.getElementById('vnHistoryContent'); content.innerHTML = ''; const list = getChatHistory(interactId); list.forEach(msg => { const div = document.createElement('div'); div.className = 'vn-hist-item'; div.innerHTML = `<div class="vn-hist-name">${msg.role==='user'?'我':'TA'}</div><div class="vn-hist-content">${msg.content}</div>`; content.appendChild(div); }); panel.classList.add('active'); }
         
@@ -994,8 +1344,7 @@
                 item.addEventListener('touchmove', e => {
                     currentX = e.touches[0].clientX;
                     const diff = startX - currentX;
-                    if(diff > 30) { // 向左滑
-                         // 简单的跟随效果可加在这里，但为了性能直接在touchend处理
+                    if(diff > 30) { 
                     }
                 }, {passive: true});
 
@@ -1042,7 +1391,7 @@
 
             const cm = h.map(m=>({role:m.role, content:m.content})); 
             
-            // 🔥 这里修改为 Online Chat 设定
+            // 🔥 Online Chat 设定
             const sysPrompt = `Persona: ${p.aiPersona}.
 ${wbPrompt}${timeContext}
 [SCENARIO: Online Chat / Instant Messaging]
@@ -1064,17 +1413,29 @@ Do NOT write long paragraphs. Break thoughts into multiple bubbles using "/n".`;
             } catch(e) { appendMessageToUI({role:'assistant',type:'text',content:"[错误]"},-1); } finally { if(s) s.innerText="在线"; } 
         }
 
-        async function triggerVnAi(e) {
-            if(e) e.stopPropagation(); showToast("AI 思考中...");
+        async function triggerVnAi(e, isTouch = false, extraPrompt = "") {
+            if(e) e.stopPropagation(); 
+            showToast("AI 思考中...");
             const { cleanUrl, key, model } = saveApiSettingsInternal();
             if(!cleanUrl || !key) return alert("请先配置 API");
+            
             const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}');
             const history = getChatHistory(interactId).slice(-10);
             const contextMsgs = history.map(m => ({ role: m.role, content: m.content }));
+            
+            // 如果是触摸触发，把用户触摸的指令作为 System/User 注入
+            let touchContext = "";
+            if (isTouch && extraPrompt) {
+                touchContext = extraPrompt;
+                // 注意：这里我们不把触摸动作存入聊天记录，只发给AI作为临时指令
+                // AI的回复会存入记录
+                contextMsgs.push({ role: "system", content: touchContext });
+            }
+
             const historyText = history.map(m=>m.content).join("\n") + "\n" + (vnState.bgName || "");
             const wbPrompt = getWorldbookPrompt(interactId, historyText);
             
-            // 🔥 这里修改为 Offline/VN 设定
+            // 🔥 Offline/VN 设定
             const sysPrompt = `Persona: ${profile.aiPersona || 'Friend'}.
 Current Outfit: ${vnState.outfit}. Location: ${vnState.bgName || 'Unknown'}.
 ${wbPrompt}
