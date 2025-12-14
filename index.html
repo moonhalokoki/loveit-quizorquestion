@@ -71,64 +71,22 @@
         .tag-pill { display: inline-block; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-top: -12px; color: #ff9eb5; font-weight: bold; }
         .top-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; cursor: pointer; }
         
-        /* 🔥 修改中间行布局：垂直居中 */
-        .middle-row { 
-            display: flex; 
-            gap: 16px; 
-            width: 100%; 
-            margin-bottom: auto; 
-            padding-bottom: 50px;
-            align-items: center; /* 关键：让左右组件垂直居中对齐 */
-        }
-        /* 🔥 修改左侧组件：强制正方形 */
-        .square-widget { 
-            flex: 1; 
-            aspect-ratio: 1 / 1; /* 锁定宽高比 */
-            padding: 0; 
-            position: relative; 
-            cursor: pointer; 
-            border-radius: var(--radius-lg); 
-            height: auto; /* 防止被父容器拉伸 */
-            width: 100%;
-        }
+        /* 中间行 */
+        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: auto; padding-bottom: 50px; align-items: center; }
+        .square-widget { flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); height: auto; width: 100%; }
         .square-widget img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
         .app-grid { flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 4px; }
         .app-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .app-item:active { transform: scale(0.95); transition: 0.1s; }
-        
-        .app-icon { 
-            width: 56px; height: 56px; 
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px; 
-            display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 4px 12px rgba(255, 183, 206, 0.3); 
-            margin-bottom: 6px; overflow: hidden; 
-        }
+        .app-icon { width: 56px; height: 56px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(255, 183, 206, 0.3); margin-bottom: 6px; overflow: hidden; }
         .app-icon img { width: 100%; height: 100%; object-fit: cover; }
         .app-label { font-size: 12px; font-weight: 600; color: #777; }
         .svg-icon { width: 26px; height: 26px; fill: #ffb7ce; }
         
-        /* 🔥 Dock 栏位置调整 */
-        .dock { 
-            height: 110px; 
-            border-radius: 40px; 
-            display: flex; justify-content: space-evenly; align-items: center; 
-            padding: 0 10px; flex-shrink: 0; 
-            margin-top: auto; 
-            margin-bottom: 15px;
-        }
+        /* Dock */
+        .dock { height: 110px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin-top: auto; margin-bottom: 15px; }
         .dock-app { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
-        .dock-box { 
-            width: 56px; height: 56px; 
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px; 
-            display: flex; align-items: center; justify-content: center; 
-            margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); overflow: hidden; 
-        }
+        .dock-box { width: 56px; height: 56px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); overflow: hidden; }
         .dock-box img { width: 100%; height: 100%; object-fit: cover; }
         
         input[type="file"] { display: none; }
@@ -152,6 +110,20 @@
         #interactSettingsApp { z-index: 2200; background: #fff; } 
         #petSettingsApp { z-index: 2300; background: #f2f2f7; }
         
+        /* 聊天设置弹窗 */
+        #chatSettingsOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 3000;
+            display: none; align-items: flex-end; justify-content: center;
+        }
+        #chatSettingsOverlay.active { display: flex; }
+        .chat-settings-panel {
+            background: #fff; width: 100%; border-top-left-radius: 24px; border-top-right-radius: 24px;
+            padding: 24px; padding-bottom: calc(30px + env(safe-area-inset-bottom));
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        #chatSettingsOverlay.active .chat-settings-panel { transform: translateY(0); }
+
         #interactSelector { 
             z-index: 2050; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); 
             display: none; justify-content: center; align-items: center; 
@@ -225,21 +197,27 @@
 
         /* --- 💬 聊天列表 & 左滑删除 --- */
         .chat-list-container, .friend-list-container { flex: 1; overflow-y: auto; background: #fff; overflow-x: hidden; width: 100%; }
-        .chat-swipe-wrapper { position: relative; overflow: hidden; border-bottom: 1px solid #f5f5f5; height: 74px; }
+        
+        .chat-swipe-wrapper { 
+            position: relative; overflow: hidden; border-bottom: 1px solid #f9f9f9; height: 74px; width: 100%;
+        }
         .chat-delete-action {
             position: absolute; top: 0; right: 0; bottom: 0; width: 80px;
             background: var(--danger-color); color: white;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; z-index: 1;
-            cursor: pointer; pointer-events: auto;
+            cursor: pointer;
         }
         .chat-item {
             display: flex; align-items: center; padding: 12px 15px; height: 74px;
-            background: #fff; position: relative; width:100%; z-index: 2;
-            transition: transform 0.2s ease-out;
-            cursor: pointer; border-bottom: 1px solid #f9f9f9;
+            background: #fff; position: relative; width: 100%; z-index: 2;
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            cursor: pointer;
         }
         .chat-item:active { background: #f2f2f7; }
+        /* 左滑状态 */
+        .chat-item.swiped { transform: translateX(-80px); }
+
         .chat-avatar { width: 50px; height: 50px; border-radius: 50%; background: #eee; margin-right: 12px; flex-shrink: 0; overflow: hidden; }
         .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .chat-content { flex: 1; min-width: 0; }
@@ -526,6 +504,28 @@
         </div>
     </div>
 
+    <!-- 💬 聊天设置弹窗 -->
+    <div id="chatSettingsOverlay">
+        <div class="chat-settings-panel">
+            <div class="modal-title">聊天设置</div>
+            <div class="settings-group">
+                <div class="list-item">
+                    <span>聊天背景</span>
+                    <button class="btn-upload" onclick="trigger('chatBgInput')">更换</button>
+                    <input type="file" id="chatBgInput" accept="image/*" onchange="uploadChatBg(this)">
+                </div>
+                <div class="list-item">
+                    <span>同步现实时间</span>
+                    <div class="toggle-switch" id="timeSyncSwitch" onclick="toggleTimeSync()">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                </div>
+                <div class="list-item" style="color:#999;font-size:12px;">开启后，发送消息时会将当前真实时间附带给 AI。</div>
+            </div>
+            <button class="btn-mini" style="width:100%; background:#f0f0f0;" onclick="closeChatSettings()">关闭</button>
+        </div>
+    </div>
+
     <div id="toast">保存成功</div>
 
     <!-- 🌸 好友选择器 -->
@@ -780,6 +780,7 @@
         <div class="app-header">
             <div class="header-back" onclick="closeChatWindow()">返回</div>
             <div class="header-title"><span id="chatTitleName">Name</span><span id="chatTitleStatus" class="header-status">在线</span></div>
+            <div class="header-right" onclick="openChatSettings()">⚙️</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="selection-bar"><span style="color:#666;" onclick="exitSelectionMode()">取消</span><span class="btn-delete-msgs" onclick="deleteSelectedMessages()">删除 (<span id="selectCount">0</span>)</span></div>
@@ -816,7 +817,7 @@
         window.onload = function() {
             try { loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc'); loadSavedImg('save_cover','coverImg',true); loadSavedImg('save_body','bodyBgImg',true); loadSavedImg('save_avatar','avatarImg',false); loadSavedImg('save_square','squareImg',false); setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc'); loadCustomFont(); loadWallpaper(); loadApiSettings(); 
             const apps=[{key:'save_icon_chat',id:'icon_chat',prev:'preview_chat'},{key:'save_icon_world',id:'icon_world',prev:'preview_world'},{key:'save_icon_interact',id:'icon_interact',prev:'preview_interact'},{key:'save_icon_appearance',id:'icon_appearance',prev:'preview_appearance'},{key:'save_icon_api',id:'icon_api',prev:'preview_api'}]; apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev)); initMockChats(); 
-            PetSystem.init(); // 🐾 初始化桌宠
+            PetSystem.init(); 
             } catch (e) { console.error(e); }
         };
 
@@ -839,19 +840,12 @@
             init() {
                 this.loadConfig();
                 this.renderSettings();
-                
-                // 恢复位置
                 const pos = JSON.parse(localStorage.getItem('pet_position') || '{"x":50, "y":20}');
                 this.el.style.left = pos.x + '%';
                 this.el.style.top = pos.y + '%';
-                
-                // 应用大小
                 this.applySize();
-
                 if (this.config.enabled) this.el.style.display = 'block';
                 this.updateImage('normal');
-                
-                // 绑定拖拽与点击
                 this.el.addEventListener('touchstart', (e) => this.handleStart(e), {passive: false});
                 this.el.addEventListener('touchmove', (e) => this.handleMove(e), {passive: false});
                 this.el.addEventListener('touchend', (e) => this.handleEnd(e));
@@ -864,226 +858,34 @@
                 const stored = JSON.parse(localStorage.getItem('pet_config') || '{}');
                 this.config = {
                     enabled: stored.enabled || false,
-                    size: stored.size || 100, // 默认大小 100
+                    size: stored.size || 100,
                     images: stored.images || {...this.defaultImages},
                     schedule: stored.schedule || [{ start: "00:00", end: "23:59", texts: ["戳我干嘛？", "陪我玩！", "OwO"] }]
                 };
             },
             
-            saveConfig() {
-                localStorage.setItem('pet_config', JSON.stringify(this.config));
-            },
+            saveConfig() { localStorage.setItem('pet_config', JSON.stringify(this.config)); },
+            applySize() { this.el.style.width = this.config.size + 'px'; this.el.style.height = this.config.size + 'px'; },
+            updateSize(val) { this.config.size = parseInt(val); document.getElementById('petSizeDisplay').innerText = this.config.size; this.applySize(); this.saveConfig(); },
+            updateImage(state) { const src = this.config.images[state] || this.defaultImages[state]; this.img.src = src; },
             
-            applySize() {
-                this.el.style.width = this.config.size + 'px';
-                this.el.style.height = this.config.size + 'px';
-            },
-
-            updateSize(val) {
-                this.config.size = parseInt(val);
-                document.getElementById('petSizeDisplay').innerText = this.config.size;
-                this.applySize();
-                this.saveConfig();
-            },
-
-            updateImage(state) {
-                const src = this.config.images[state] || this.defaultImages[state];
-                this.img.src = src;
-            },
+            handleStart(e) { if (e.type === 'mousedown') e.preventDefault(); this.isDragging = false; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; this.startX = clientX; this.startY = clientY; const rect = this.el.getBoundingClientRect(); this.initialLeft = rect.left; this.initialTop = rect.top; this.hasMoved = false; },
+            handleMove(e) { if (this.startX === 0 && this.startY === 0) return; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; if (!this.hasMoved && (Math.abs(clientX - this.startX) > 5 || Math.abs(clientY - this.startY) > 5)) { this.hasMoved = true; this.isDragging = true; this.updateImage('drag'); } if (this.isDragging) { if (e.cancelable) e.preventDefault(); const dx = clientX - this.startX; const dy = clientY - this.startY; this.el.style.left = (this.initialLeft + dx) + 'px'; this.el.style.top = (this.initialTop + dy) + 'px'; } },
+            handleEnd(e) { this.startX = 0; this.startY = 0; if (this.isDragging) { this.isDragging = false; this.updateImage('normal'); const rect = this.el.getBoundingClientRect(); const x = (rect.left / window.innerWidth) * 100; const y = (rect.top / window.innerHeight) * 100; localStorage.setItem('pet_position', JSON.stringify({x, y})); } else if (this.hasMoved === false) { this.poke(); } },
             
-            // 交互逻辑
-            handleStart(e) {
-                if (e.type === 'mousedown') e.preventDefault();
-                this.isDragging = false;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                this.startX = clientX;
-                this.startY = clientY;
-                const rect = this.el.getBoundingClientRect();
-                this.initialLeft = rect.left;
-                this.initialTop = rect.top;
-                this.hasMoved = false;
-            },
+            poke() { this.updateImage('poke'); if(navigator.vibrate) navigator.vibrate(50); const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0'); let validTexts = []; this.config.schedule.forEach(item => { if (timeStr >= item.start && timeStr <= item.end) { validTexts = validTexts.concat(item.texts); } }); if (validTexts.length === 0) validTexts = ["..."]; const text = validTexts[Math.floor(Math.random() * validTexts.length)]; this.showBubble(text); if (this.pokeTimer) clearTimeout(this.pokeTimer); this.pokeTimer = setTimeout(() => { this.updateImage('normal'); }, 2000); },
+            showBubble(text) { this.bubble.innerText = text; this.bubble.classList.add('active'); if (this.bubbleTimer) clearTimeout(this.bubbleTimer); this.bubbleTimer = setTimeout(() => { this.bubble.classList.remove('active'); }, 3000); },
             
-            handleMove(e) {
-                if (this.startX === 0 && this.startY === 0) return; // not pressed
-                // 只有按下后移动距离超过阈值才算拖拽
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                if (!this.hasMoved && (Math.abs(clientX - this.startX) > 5 || Math.abs(clientY - this.startY) > 5)) {
-                    this.hasMoved = true;
-                    this.isDragging = true;
-                    this.updateImage('drag');
-                }
-                
-                if (this.isDragging) {
-                    if (e.cancelable) e.preventDefault();
-                    const dx = clientX - this.startX;
-                    const dy = clientY - this.startY;
-                    this.el.style.left = (this.initialLeft + dx) + 'px';
-                    this.el.style.top = (this.initialTop + dy) + 'px';
-                }
-            },
-            
-            handleEnd(e) {
-                this.startX = 0; this.startY = 0;
-                
-                if (this.isDragging) {
-                    this.isDragging = false;
-                    this.updateImage('normal');
-                    // 保存位置百分比以适应不同屏幕
-                    const rect = this.el.getBoundingClientRect();
-                    const x = (rect.left / window.innerWidth) * 100;
-                    const y = (rect.top / window.innerHeight) * 100;
-                    localStorage.setItem('pet_position', JSON.stringify({x, y}));
-                } else if (this.hasMoved === false) {
-                    // 点击/戳一戳
-                    this.poke();
-                }
-            },
-            
-            poke() {
-                this.updateImage('poke');
-                // 震动反馈
-                if(navigator.vibrate) navigator.vibrate(50);
-                
-                // 说话
-                const now = new Date();
-                const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-                let validTexts = [];
-                
-                this.config.schedule.forEach(item => {
-                    if (timeStr >= item.start && timeStr <= item.end) {
-                        validTexts = validTexts.concat(item.texts);
-                    }
-                });
-                
-                if (validTexts.length === 0) validTexts = ["..."];
-                const text = validTexts[Math.floor(Math.random() * validTexts.length)];
-                
-                this.showBubble(text);
-                
-                if (this.pokeTimer) clearTimeout(this.pokeTimer);
-                this.pokeTimer = setTimeout(() => {
-                    this.updateImage('normal');
-                }, 2000);
-            },
-            
-            showBubble(text) {
-                this.bubble.innerText = text;
-                this.bubble.classList.add('active');
-                if (this.bubbleTimer) clearTimeout(this.bubbleTimer);
-                this.bubbleTimer = setTimeout(() => {
-                    this.bubble.classList.remove('active');
-                }, 3000);
-            },
-            
-            // 设置界面逻辑
-            renderSettings() {
-                const sw = document.getElementById('petSwitch');
-                if (this.config.enabled) sw.classList.add('active');
-                else sw.classList.remove('active');
-
-                // 设置滑块值
-                document.getElementById('petSizeInput').value = this.config.size;
-                document.getElementById('petSizeDisplay').innerText = this.config.size;
-                
-                ['normal', 'drag', 'poke'].forEach(state => {
-                    const preview = document.getElementById('preview_pet_' + state);
-                    if (preview) preview.innerHTML = `<img src="${this.config.images[state] || this.defaultImages[state]}">`;
-                });
-                
-                this.renderSchedule();
-            },
-            
-            renderSchedule() {
-                const list = document.getElementById('petScheduleList');
-                list.innerHTML = '';
-                this.config.schedule.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.style.cssText = "background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:10px; margin-bottom:8px; position:relative;";
-                    div.innerHTML = `
-                        <div style="font-weight:bold; color:#007aff; font-size:14px; margin-bottom:5px;">${item.start} - ${item.end}</div>
-                        <div style="font-size:12px; color:#555;">${item.texts.join(' / ')}</div>
-                        <div style="position:absolute; top:10px; right:10px; color:red; cursor:pointer;" onclick="PetSystem.deleteSchedule(${index})">×</div>
-                    `;
-                    list.appendChild(div);
-                });
-            },
-            
-            saveImage(input, state) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const c = document.createElement('canvas');
-                            const ctx = c.getContext('2d');
-                            // 桌宠图片不需要太大，限制200px
-                            let w=img.width, h=img.height;
-                            if(w>200){h*=200/w;w=200;} else if(h>200){w*=200/h;h=200;}
-                            c.width=w; c.height=h;
-                            ctx.drawImage(img,0,0,w,h);
-                            const url = c.toDataURL('image/png');
-                            this.config.images[state] = url;
-                            this.saveConfig();
-                            this.renderSettings();
-                            this.updateImage('normal'); // 刷新显示
-                            showToast("图片已更新");
-                        }
-                    };
-                    reader.readAsDataURL(input.files[0]);
-                    input.value = '';
-                }
-            },
-            
-            addSchedule() {
-                const start = document.getElementById('petStartTime').value;
-                const end = document.getElementById('petEndTime').value;
-                const textInput = document.getElementById('petDialogueInput');
-                const text = textInput.value.trim();
-                
-                if (!start || !end || !text) return showToast("请填写完整");
-                
-                // 查找是否已有完全相同时间段
-                let existing = this.config.schedule.find(s => s.start === start && s.end === end);
-                if (existing) {
-                    existing.texts.push(text);
-                } else {
-                    this.config.schedule.push({ start, end, texts: [text] });
-                }
-                
-                this.saveConfig();
-                this.renderSchedule();
-                textInput.value = '';
-                showToast("对话已添加");
-            },
-            
-            deleteSchedule(index) {
-                if (confirm("删除这个时间段设置？")) {
-                    this.config.schedule.splice(index, 1);
-                    this.saveConfig();
-                    this.renderSchedule();
-                }
-            }
+            renderSettings() { const sw = document.getElementById('petSwitch'); if (this.config.enabled) sw.classList.add('active'); else sw.classList.remove('active'); document.getElementById('petSizeInput').value = this.config.size; document.getElementById('petSizeDisplay').innerText = this.config.size; ['normal', 'drag', 'poke'].forEach(state => { const preview = document.getElementById('preview_pet_' + state); if (preview) preview.innerHTML = `<img src="${this.config.images[state] || this.defaultImages[state]}">`; }); this.renderSchedule(); },
+            renderSchedule() { const list = document.getElementById('petScheduleList'); list.innerHTML = ''; this.config.schedule.forEach((item, index) => { const div = document.createElement('div'); div.style.cssText = "background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:10px; margin-bottom:8px; position:relative;"; div.innerHTML = `<div style="font-weight:bold; color:#007aff; font-size:14px; margin-bottom:5px;">${item.start} - ${item.end}</div><div style="font-size:12px; color:#555;">${item.texts.join(' / ')}</div><div style="position:absolute; top:10px; right:10px; color:red; cursor:pointer;" onclick="PetSystem.deleteSchedule(${index})">×</div>`; list.appendChild(div); }); },
+            saveImage(input, state) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w=img.width, h=img.height; if(w>200){h*=200/w;w=200;} else if(h>200){w*=200/h;h=200;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const url = c.toDataURL('image/png'); this.config.images[state] = url; this.saveConfig(); this.renderSettings(); this.updateImage('normal'); showToast("图片已更新"); } }; reader.readAsDataURL(input.files[0]); input.value = ''; } },
+            addSchedule() { const start = document.getElementById('petStartTime').value; const end = document.getElementById('petEndTime').value; const textInput = document.getElementById('petDialogueInput'); const text = textInput.value.trim(); if (!start || !end || !text) return showToast("请填写完整"); let existing = this.config.schedule.find(s => s.start === start && s.end === end); if (existing) { existing.texts.push(text); } else { this.config.schedule.push({ start, end, texts: [text] }); } this.saveConfig(); this.renderSchedule(); textInput.value = ''; showToast("对话已添加"); },
+            deleteSchedule(index) { if (confirm("删除这个时间段设置？")) { this.config.schedule.splice(index, 1); this.saveConfig(); this.renderSchedule(); } }
         };
 
-        function openPetApp() {
-            PetSystem.renderSettings();
-            document.getElementById('petSettingsApp').classList.add('active');
-            document.getElementById('desktop').classList.add('pushed');
-        }
-        function closePetApp() {
-            document.getElementById('petSettingsApp').classList.remove('active');
-            document.getElementById('desktop').classList.remove('pushed');
-        }
-        function togglePetSwitch() {
-            PetSystem.config.enabled = !PetSystem.config.enabled;
-            PetSystem.saveConfig();
-            PetSystem.renderSettings();
-            document.getElementById('desktopPet').style.display = PetSystem.config.enabled ? 'block' : 'none';
-        }
+        function openPetApp() { PetSystem.renderSettings(); document.getElementById('petSettingsApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); }
+        function closePetApp() { document.getElementById('petSettingsApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
+        function togglePetSwitch() { PetSystem.config.enabled = !PetSystem.config.enabled; PetSystem.saveConfig(); PetSystem.renderSettings(); document.getElementById('desktopPet').style.display = PetSystem.config.enabled ? 'block' : 'none'; }
 
         /* Worldbook */
         function openWorldbookApp() { document.getElementById('worldbookApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); renderWorldbookList(); }
@@ -1136,8 +938,77 @@
         /* Standard Chat Features */
         function createNewChat() { Modal.show('prompt', '新建聊天', '', '输入名字').then(name => { if(name){ const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const id = 'c' + Date.now(); list.unshift({ id: id, name: name, avatar: `https://ui-avatars.com/api/?name=${name}&background=random`, lastMsg: '新会话', time: '刚刚' }); localStorage.setItem('chat_list_data', JSON.stringify(list)); renderChatList(); } }); }
         function handleAddButton() { const isFriendTab = document.getElementById('friendListContainer').style.display === 'block'; if(isFriendTab) { const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); list.push({ id: 'f'+Date.now(), name: '新朋友', avatar: 'https://via.placeholder.com/100', lastMsg: '', time: '' }); localStorage.setItem('chat_list_data', JSON.stringify(list)); renderFriendList(); showToast("好友已添加"); } else { createNewChat(); } }
-        async function deleteChat(e, id) { if(e) { e.stopPropagation(); e.preventDefault(); } if(await Modal.show('confirm-danger', '删除聊天？')) { const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const idx = list.findIndex(c => c.id == id); if(idx !== -1) { list[idx].hidden = true; localStorage.setItem('chat_list_data', JSON.stringify(list)); renderChatList(); showToast("已删除"); } } }
-        function renderChatList() { const container = document.getElementById('chatListContainer'); let list = JSON.parse(localStorage.getItem('chat_list_data') || '[]'); const visibleList = list.filter(c => !c.hidden); if (visibleList.length === 0) { container.innerHTML = '<div style="padding:50px; text-align:center; color:#ccc;">暂无消息</div>'; return; } let html = ''; visibleList.forEach(chat => { html += `<div class="chat-swipe-wrapper"><div class="chat-delete-action" ontouchend="deleteChat(event, '${chat.id}')" onclick="deleteChat(event, '${chat.id}')">删除</div><div class="chat-item" onclick="openChatWindow('${chat.id}', '${chat.name}', '${chat.avatar}')"><div class="chat-avatar"><img src="${chat.avatar}"></div><div class="chat-content"><div class="chat-top-row"><span class="chat-name">${chat.name}</span><span class="chat-time">${chat.time}</span></div><div class="chat-preview">${chat.lastMsg}</div></div></div></div>`; }); container.innerHTML = html; }
+        
+        async function deleteChat(e, id) { 
+            if(e) { e.stopPropagation(); e.preventDefault(); } 
+            if(await Modal.show('confirm-danger', '确定删除聊天？', '这将清空聊天记录，但在好友列表中仍可找到此角色。')) { 
+                const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); 
+                const idx = list.findIndex(c => c.id == id); 
+                if(idx !== -1) { 
+                    list[idx].hidden = true; 
+                    list[idx].lastMsg = "";
+                    localStorage.setItem('chat_list_data', JSON.stringify(list)); 
+                    localStorage.removeItem('chat_history_' + id); // 清空记录
+                    renderChatList(); 
+                    showToast("已删除"); 
+                } 
+            } 
+        }
+
+        function renderChatList() { 
+            const container = document.getElementById('chatListContainer'); 
+            let list = JSON.parse(localStorage.getItem('chat_list_data') || '[]'); 
+            const visibleList = list.filter(c => !c.hidden); 
+            if (visibleList.length === 0) { container.innerHTML = '<div style="padding:50px; text-align:center; color:#ccc;">暂无消息</div>'; return; } 
+            
+            let html = ''; 
+            visibleList.forEach(chat => { 
+                html += `
+                <div class="chat-swipe-wrapper">
+                    <div class="chat-delete-action" onclick="deleteChat(event, '${chat.id}')">删除</div>
+                    <div class="chat-item" id="chat-item-${chat.id}" onclick="openChatWindow('${chat.id}', '${chat.name}', '${chat.avatar}')">
+                        <div class="chat-avatar"><img src="${chat.avatar}"></div>
+                        <div class="chat-content">
+                            <div class="chat-top-row"><span class="chat-name">${chat.name}</span><span class="chat-time">${chat.time}</span></div>
+                            <div class="chat-preview">${chat.lastMsg}</div>
+                        </div>
+                    </div>
+                </div>`; 
+            }); 
+            container.innerHTML = html; 
+            initSwipeHandlers();
+        }
+        
+        // 左滑删除逻辑
+        function initSwipeHandlers() {
+            document.querySelectorAll('.chat-item').forEach(item => {
+                let startX, currentX;
+                item.addEventListener('touchstart', e => {
+                    startX = e.touches[0].clientX;
+                    // 重置其他已滑动的
+                    document.querySelectorAll('.chat-item.swiped').forEach(el => {
+                        if(el !== item) el.classList.remove('swiped');
+                    });
+                }, {passive: true});
+                
+                item.addEventListener('touchmove', e => {
+                    currentX = e.touches[0].clientX;
+                    const diff = startX - currentX;
+                    if(diff > 30) { // 向左滑
+                         // 简单的跟随效果可加在这里，但为了性能直接在touchend处理
+                    }
+                }, {passive: true});
+
+                item.addEventListener('touchend', e => {
+                    const diff = startX - currentX;
+                    if(diff > 60) {
+                        item.classList.add('swiped');
+                    } else if (diff < -60) {
+                        item.classList.remove('swiped');
+                    }
+                });
+            });
+        }
         
         /* Chat Logic */
         async function deleteSelectedMessages() { if (selectedIndices.size === 0) return; if (!await Modal.show('confirm-danger', `删除 ${selectedIndices.size}条?`)) return; let history = getChatHistory(activeChatId); history = history.filter((_, idx) => !selectedIndices.has(Number(idx))); localStorage.setItem('chat_history_' + activeChatId, JSON.stringify(history)); updateChatListPreview(activeChatId, history.length>0?history[history.length-1].content:'', ''); exitSelectionMode(); renderChatMessages(); showToast("已删除"); }
@@ -1160,8 +1031,27 @@
             const h = getChatHistory(activeChatId).slice(-10); 
             const historyText = h.map(m => m.content).join("\n") + "\n" + (userText || "");
             const wbPrompt = getWorldbookPrompt(activeChatId, historyText);
+            
+            // --- ⚙️ 获取聊天设置 (时间同步) ---
+            const chatSettings = JSON.parse(localStorage.getItem('chat_settings_' + activeChatId) || '{}');
+            let timeContext = "";
+            if (chatSettings.syncTime) {
+                const now = new Date();
+                timeContext = `\n[System Note: Current Real World Time is ${now.toLocaleString('zh-CN', { hour12: false })}]`;
+            }
+
             const cm = h.map(m=>({role:m.role, content:m.content})); 
-            const ms = [{role:"system", content:`Persona: ${p.aiPersona}.\n${wbPrompt}\nReply with multiple bubbles split by /n.`}, ...cm]; 
+            
+            // 🔥 这里修改为 Online Chat 设定
+            const sysPrompt = `Persona: ${p.aiPersona}.
+${wbPrompt}${timeContext}
+[SCENARIO: Online Chat / Instant Messaging]
+You are chatting online with the user. Use casual, short messages.
+Strictly split every separate message bubble with "/n".
+Do NOT write long paragraphs. Break thoughts into multiple bubbles using "/n".`;
+
+            const ms = [{role:"system", content: sysPrompt}, ...cm]; 
+            
             try {
                 const r = await fetch(`${cleanUrl}/chat/completions`,{method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:model||"gpt-3.5-turbo",messages:ms})}); 
                 if(r.ok){
@@ -1183,11 +1073,17 @@
             const contextMsgs = history.map(m => ({ role: m.role, content: m.content }));
             const historyText = history.map(m=>m.content).join("\n") + "\n" + (vnState.bgName || "");
             const wbPrompt = getWorldbookPrompt(interactId, historyText);
+            
+            // 🔥 这里修改为 Offline/VN 设定
             const sysPrompt = `Persona: ${profile.aiPersona || 'Friend'}.
-Current Outfit: ${vnState.outfit}. Current Location/Scene: ${vnState.bgName || 'Unknown'}.
+Current Outfit: ${vnState.outfit}. Location: ${vnState.bgName || 'Unknown'}.
 ${wbPrompt}
-Response Style: Visual Novel. IMPORTANT: Split separate thoughts with "/n".
-Instructions: Add tag (face:smile) or (face:angry) at start of line to change expression.`;
+[SCENARIO: Offline / Face-to-Face Interaction]
+Style: Visual Novel / Roleplay.
+You MUST include narration, environmental descriptions, and detailed character actions/body language.
+CRITICAL FORMATTING RULE: Split every distinct dialogue line, thought, or narration block with "/n".
+Instructions: Add tag (face:smile) or (face:angry) at start of line to change facial expression.`;
+
             const msgs = [{ role: "system", content: sysPrompt }, ...contextMsgs];
             try {
                 const r = await fetch(`${cleanUrl}/chat/completions`, {method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:model||"gpt-3.5-turbo",messages:msgs})});
@@ -1278,6 +1174,50 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change ex
         function trigger(id) { document.getElementById(id).click(); }
         async function fetchModels() { const { cleanUrl, key } = saveApiSettingsInternal(); if (!cleanUrl || !key) return showToast("请先填写配置"); const statusEl = document.getElementById('fetch_status'); statusEl.innerText = "获取中..."; try { const res = await fetch(`${cleanUrl}/models`, { headers: { 'Authorization': `Bearer ${key}` } }); if (res.ok) { const data = await res.json(); const select = document.getElementById('model_select'); select.innerHTML = '<option value="">-- 选择模型 --</option>'; const list = data.data || data; if(Array.isArray(list)) { list.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.innerText = m.id; select.appendChild(opt); }); document.getElementById('model_selector_row').style.display = 'flex'; statusEl.innerText = "✅ 成功"; } } else { statusEl.innerText = "❌ 失败 " + res.status; } } catch (e) { statusEl.innerText = "❌ 网络错误"; } }
         async function testConnection() { const { cleanUrl, key, model } = saveApiSettingsInternal(); const resBox = document.getElementById('test_result'); resBox.innerText = "正在连接..."; if (!cleanUrl || !key) { resBox.innerText = "❌ 请先完善配置"; return; } try { const res = await fetch(`${cleanUrl}/chat/completions`, { method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: model || "gpt-3.5-turbo", messages: [{ role: "user", content: "Hi" }], max_tokens: 5 }) }); if (res.ok) { resBox.innerText = "✅ 连接成功"; showToast("连接成功"); } else { const err = await res.text(); resBox.innerText = `❌ 失败 (${res.status}): ${err.slice(0, 100)}`; } } catch (e) { resBox.innerText = "❌ 错误: " + e.message; } }
+        
+        // --- ⚙️ 聊天设置逻辑 ---
+        function openChatSettings() {
+            if(!activeChatId) return;
+            const settings = JSON.parse(localStorage.getItem('chat_settings_' + activeChatId) || '{}');
+            const syncSw = document.getElementById('timeSyncSwitch');
+            if (settings.syncTime) syncSw.classList.add('active');
+            else syncSw.classList.remove('active');
+            
+            document.getElementById('chatSettingsOverlay').classList.add('active');
+        }
+        function closeChatSettings() { document.getElementById('chatSettingsOverlay').classList.remove('active'); }
+        function toggleTimeSync() {
+            if(!activeChatId) return;
+            const settings = JSON.parse(localStorage.getItem('chat_settings_' + activeChatId) || '{}');
+            settings.syncTime = !settings.syncTime;
+            localStorage.setItem('chat_settings_' + activeChatId, JSON.stringify(settings));
+            const syncSw = document.getElementById('timeSyncSwitch');
+            if (settings.syncTime) syncSw.classList.add('active');
+            else syncSw.classList.remove('active');
+            showToast(settings.syncTime ? "已开启时间同步" : "已关闭时间同步");
+        }
+        function uploadChatBg(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+                        let w = img.width, h = img.height; const max = 800;
+                        if(w>max){h*=max/w;w=max;} c.width=w; c.height=h;
+                        ctx.drawImage(img,0,0,w,h);
+                        const url = c.toDataURL('image/jpeg', 0.7);
+                        localStorage.setItem('chat_bg_' + activeChatId, url);
+                        document.getElementById('chatMessages').style.backgroundImage = `url(${url})`;
+                        showToast("背景已更换");
+                        closeChatSettings();
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+                input.value='';
+            }
+        }
     </script>
 </body>
 </html>
