@@ -692,6 +692,65 @@
         </div>
     </div>
 
+    <!-- 🐾 桌宠设置 APP (补全部分) -->
+    <div class="fullscreen-app" id="petSettingsApp">
+        <div class="app-header">
+            <div class="header-back" onclick="closePetApp()">‹ 返回</div>
+            <div class="header-title">桌宠设置</div>
+        </div>
+        <div class="settings-content">
+            <div class="settings-group">
+                <div class="switch-row">
+                    <span>启用桌宠</span>
+                    <div class="toggle-switch" id="petSwitch" onclick="togglePetSwitch()">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 尺寸调节 -->
+            <div class="group-title">桌宠大小 (<span id="petSizeDisplay">100</span>px)</div>
+            <div class="settings-group">
+                <div class="list-item" style="display:block; padding: 20px 15px;">
+                     <input type="range" id="petSizeInput" min="50" max="300" step="10" style="width:100%" oninput="PetSystem.updateSize(this.value)">
+                </div>
+            </div>
+
+            <div class="group-title">图片设置 (点击更换)</div>
+            <div class="settings-group">
+                <div class="list-item">
+                    <div class="list-label"><div class="icon-preview" id="preview_pet_normal"></div>正常状态</div>
+                    <button class="btn-upload" onclick="trigger('petNormalInput')">上传</button>
+                    <input type="file" id="petNormalInput" accept="image/*" onchange="PetSystem.saveImage(this, 'normal')">
+                </div>
+                <div class="list-item">
+                    <div class="list-label"><div class="icon-preview" id="preview_pet_drag"></div>拖拽时</div>
+                    <button class="btn-upload" onclick="trigger('petDragInput')">上传</button>
+                    <input type="file" id="petDragInput" accept="image/*" onchange="PetSystem.saveImage(this, 'drag')">
+                </div>
+                <div class="list-item">
+                    <div class="list-label"><div class="icon-preview" id="preview_pet_poke"></div>被戳时</div>
+                    <button class="btn-upload" onclick="trigger('petPokeInput')">上传</button>
+                    <input type="file" id="petPokeInput" accept="image/*" onchange="PetSystem.saveImage(this, 'poke')">
+                </div>
+            </div>
+
+            <div class="group-title">戳戳反应 (时间段对话)</div>
+            <div class="settings-group">
+                <div id="petScheduleList" style="padding: 10px;"></div>
+                <div style="padding: 15px; border-top: 1px solid #eee;">
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="time" id="petStartTime" class="text-input" value="09:00">
+                        <span style="align-self:center">-</span>
+                        <input type="time" id="petEndTime" class="text-input" value="18:00">
+                    </div>
+                    <input type="text" id="petDialogueInput" class="text-input" placeholder="输入一句话 (可多次添加)" style="margin-bottom:10px;">
+                    <button class="btn-mini btn-export" style="width:100%" onclick="PetSystem.addSchedule()">添加对话</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <input type="file" id="vnBgInput" style="display:none" accept="image/*" onchange="handleVNUpload(this, 'bg')">
     <input type="file" id="vnTachieInput" style="display:none" accept="image/*" onchange="handleSpriteUploadStart(this)">
 
@@ -869,6 +928,7 @@
             open() {
                 if(!interactId) return;
                 this.loadConfig();
+                // 加载当前立绘预览
                 const assetsKey = 'chat_vn_assets_' + interactId;
                 const data = JSON.parse(localStorage.getItem(assetsKey) || '{"sprites":[]}');
                 const s = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || data.sprites[0];
@@ -892,6 +952,7 @@
                 localStorage.setItem(key, JSON.stringify(this.config));
                 showToast("触摸设置已保存");
                 this.close();
+                // 如果正在互动，立即应用
                 if(activeChatId === interactId) updateInteractDisplay();
             },
             
@@ -923,16 +984,23 @@
                     [this.config[index], this.config[index+1]] = [this.config[index+1], this.config[index]];
                 }
                 this.renderList();
-                this.renderCanvas(); 
+                this.renderCanvas(); // z-index 更新
             },
 
             renderList() {
                 this.list.innerHTML = '';
+                // 倒序显示，上面的是顶层
                 [...this.config].reverse().forEach((area, revIndex) => {
                     const realIndex = this.config.length - 1 - revIndex;
                     const div = document.createElement('div');
                     div.className = `layer-item ${area.id === this.selectedId ? 'active' : ''}`;
-                    div.innerHTML = `<span>${area.name}</span><div><span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, -1)">▲</span><span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, 1)">▼</span></div>`;
+                    div.innerHTML = `
+                        <span>${area.name}</span>
+                        <div>
+                            <span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, -1)">▲</span>
+                            <span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, 1)">▼</span>
+                        </div>
+                    `;
                     div.onclick = (e) => {
                         if(e.target.classList.contains('layer-btn')) return;
                         this.selectedId = area.id;
@@ -944,6 +1012,7 @@
             },
             
             renderCanvas() {
+                // 清除旧的box
                 const old = this.canvas.querySelectorAll('.touch-box');
                 old.forEach(o => o.remove());
                 
@@ -955,71 +1024,55 @@
                     box.style.top = area.y + '%';
                     box.style.width = area.w + '%';
                     box.style.height = area.h + '%';
+                    // z-index 并不是真的CSS z-index，而是数组顺序，这里简单处理
+                    
+                    // 绑定拖拽事件
                     this.attachDrag(box, area);
+                    
                     if(area.id === this.selectedId) {
                         const handle = document.createElement('div');
                         handle.className = 'touch-handle';
                         this.attachResize(handle, area);
                         box.appendChild(handle);
                     }
+                    
+                    // 点击选中
                     box.addEventListener('touchstart', (e) => {
-                        if(e.target !== box) return; 
+                        if(e.target !== box) return; // ignore handle
                         this.selectedId = area.id;
                         this.renderCanvas();
                         this.renderList();
                     }, {passive: false});
+                    
                     this.canvas.appendChild(box);
                 });
             },
             
-            // 🔥 全新拖拽逻辑：使用 transform 替代百分比实时计算，解决卡顿
             attachDrag(el, area) {
-                let startX, startY;
-                let initialLeft, initialTop; 
-                let containerW, containerH;
-                let isDragging = false;
-                const getPx = (pct, dim) => (pct / 100) * dim;
-
+                let startX, startY, startLeft, startTop, cw, ch;
                 el.addEventListener('touchstart', (e) => {
-                    if (e.target !== el) return;
+                    if(e.target !== el) return;
                     e.preventDefault();
                     const touch = e.touches[0];
                     startX = touch.clientX;
                     startY = touch.clientY;
-                    const parent = this.canvas;
-                    containerW = parent.clientWidth;
-                    containerH = parent.clientHeight;
-                    initialLeft = getPx(area.x, containerW);
-                    initialTop = getPx(area.y, containerH);
-                    isDragging = true;
-                    el.style.transition = 'none'; 
-                    el.style.zIndex = 1000; 
-                }, { passive: false });
-
+                    cw = this.canvas.clientWidth;
+                    ch = this.canvas.clientHeight;
+                    startLeft = area.x;
+                    startTop = area.y;
+                }, {passive: false});
+                
                 el.addEventListener('touchmove', (e) => {
-                    if (!isDragging) return;
+                    if(e.target !== el) return;
                     e.preventDefault();
                     const touch = e.touches[0];
-                    const dx = touch.clientX - startX;
-                    const dy = touch.clientY - startY;
-                    el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-                }, { passive: false });
-
-                el.addEventListener('touchend', (e) => {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    const touch = e.changedTouches[0];
-                    const dx = touch.clientX - startX;
-                    const dy = touch.clientY - startY;
-                    let finalX = initialLeft + dx;
-                    let finalY = initialTop + dy;
-                    area.x = (finalX / containerW) * 100;
-                    area.y = (finalY / containerH) * 100;
-                    el.style.transform = 'none';
+                    const dx = (touch.clientX - startX) / cw * 100;
+                    const dy = (touch.clientY - startY) / ch * 100;
+                    area.x = startLeft + dx;
+                    area.y = startTop + dy;
                     el.style.left = area.x + '%';
                     el.style.top = area.y + '%';
-                    el.style.zIndex = '';
-                });
+                }, {passive: false});
             },
             
             attachResize(el, area) {
@@ -1478,7 +1531,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function closeApiApp() { document.getElementById('apiSettingsApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
         function openChatListApp() { switchTab('msg'); document.getElementById('chatListApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); renderChatList(); }
         function closeChatListApp() { document.getElementById('chatListApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
-        function switchTab(tab) { const msgList = document.getElementById('chatListContainer'); const friendList = document.getElementById('friendListContainer'); const tabMsg = document.getElementById('tab-msg'); const tabFriend = document.getElementById('tab-friend'); if(tab === 'msg') { if(msgList) msgList.style.display = 'block'; if(friendList) friendList.style.display = 'none'; if(tabMsg) tabMsg.classList.add('active'); if(tabFriend) tabFriend.classList.remove('active'); renderChatList(); } else { if(msgList) msgList.style.display = 'none'; if(friendList) friendList.style.display = 'block'; if(tabMsg) tabMsg.classList.remove('active'); if(tabFriend) tabFriend.classList.add('active'); renderFriendList(); } }
+        function switchTab(tab) { const msgList = document.getElementById('chatListContainer'); const friendList = document.getElementById('friendListContainer'); const tabMsg = document.getElementById('tab-msg'); const tabFriend = document.getElementById('tab-friend'); if(tab === 'msg') { msgList.style.display = 'block'; friendList.style.display = 'none'; tabMsg.classList.add('active'); tabFriend.classList.remove('active'); renderChatList(); } else { msgList.style.display = 'none'; friendList.style.display = 'block'; tabMsg.classList.remove('active'); tabFriend.classList.add('active'); renderFriendList(); } }
         function renderFriendList() { const c=document.getElementById('friendListContainer'); const l=JSON.parse(localStorage.getItem('chat_list_data')||'[]'); let h=''; l.forEach(chat=>{h+=`<div class="chat-item" onclick="openProfile('${chat.id}')"><div class="chat-avatar"><img src="${chat.avatar}"></div><div class="chat-content"><div class="chat-name">${chat.name}</div><div class="friend-bio">点击查看资料</div></div></div>`;}); c.innerHTML=h; }
         function openProfile(id) { if(!id)return; currentProfileId=id; const l=JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const chat=l.find(c=>c.id==id); const p=JSON.parse(localStorage.getItem('chat_profile_'+id)||'{}'); safeSetSrc('p_cover_img', p.cover||'https://via.placeholder.com/600x300'); safeSetSrc('p_avatar_img', chat.avatar); safeSetText('p_name', chat.name); ['gender','age','birth','job','sign'].forEach(k => safeSetText('p_'+k, p[k]||'')); safeSetText('p_ai_persona', p.aiPersona||''); safeSetText('p_user_persona', p.userPersona||''); safeSetSrc('p_user_avatar_img', p.userAvatar||document.getElementById('avatarImg').src); renderWorldbookTags(p.worldbook_ids); document.getElementById('profileApp').classList.add('active'); }
         function closeProfile() { document.getElementById('profileApp').classList.remove('active'); }
