@@ -8,8 +8,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Kawaii OS + Memory</title>
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
-    <link rel="icon" type="image/jpg" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
+    <link rel="apple-touch-icon" href="111" />
+    <link rel="icon" type="image/jpg" href="111" />
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.65);
@@ -1145,24 +1145,46 @@
         let activeChatId=null, activeChatName="", activeChatAvatar="", currentProfileId=null, isSelectionMode=false, selectedIndices=new Set(), longPressTimer, interactId=null, vnQueue=[], isVnInputMode=false, vnState={outfit:'default',face:'normal',bgName:''}, lastAutoScheduleIndex=-1, tempSpriteData=null;
 
         window.onload = function() {
-            try { loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc'); loadSavedImg('save_cover','coverImg',true); loadSavedImg('save_body','bodyBgImg',true); loadSavedImg('save_avatar','avatarImg',false); loadSavedImg('save_square','squareImg',false); setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc'); loadCustomFont(); loadWallpaper(); loadApiSettings(); 
-            const apps=[
-                {key:'save_icon_chat',id:'icon_chat',prev:'preview_chat'},
-                {key:'save_icon_world',id:'icon_world',prev:'preview_world'},
-                {key:'save_icon_interact',id:'icon_interact',prev:'preview_interact'},
-                {key:'save_icon_appearance',id:'icon_appearance',prev:'preview_appearance'},
-                {key:'save_icon_api',id:'icon_api',prev:'preview_api'},
-                {key:'save_icon_map',id:'icon_map',prev:'preview_map'},
-                {key:'save_icon_map',id:'icon_dock_map'}, // Dock上的
-                {key:'save_icon_music',id:'icon_music',prev:'preview_music'},
-                {key:'save_icon_music',id:'icon_dock_music'}, // Dock上的
-                {key:'save_icon_pet',id:'icon_pet',prev:'preview_pet'}
-            ]; 
-            apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev)); initMockChats(); 
-            PetSystem.init(); 
-            } catch (e) { console.error(e); }
-        };
+    try {
+        // 加载文本
+        loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc');
+        // 加载图片
+        loadSavedImg('save_cover', 'coverImg', true);
+        loadSavedImg('save_body', 'bodyBgImg', true);
+        loadSavedImg('save_avatar', 'avatarImg', false);
+        loadSavedImg('save_square', 'squareImg', false);
+        // 初始化监听器
+        setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc');
+        loadCustomFont(); loadWallpaper(); loadApiSettings();
 
+        // 🔥 修复后的图标加载列表 (专门对应现在的 Dock 栏 ID)
+        const apps = [
+            // 聊天 (key: 存储键名, id: 界面上的ID, prev: 设置里的预览图ID)
+            {key: 'save_icon_chat', id: 'icon_chat', prev: 'preview_chat'},
+            {key: 'save_icon_world', id: 'icon_world', prev: 'preview_world'},
+            {key: 'save_icon_interact', id: 'icon_interact', prev: 'preview_interact'},
+            {key: 'save_icon_appearance', id: 'icon_appearance', prev: 'preview_appearance'},
+            {key: 'save_icon_api', id: 'icon_api', prev: 'preview_api'},
+            
+            // 地图 (注意：这里 ID 改成了 icon_dock_map)
+            {key: 'save_icon_map', id: 'icon_dock_map', prev: 'preview_map'},
+            
+            // 音乐 (注意：这里 ID 改成了 icon_dock_music)
+            {key: 'save_icon_music', id: 'icon_dock_music', prev: 'preview_music'},
+            
+            // 桌宠
+            {key: 'save_icon_pet', id: 'icon_pet', prev: 'preview_pet'}
+        ];
+
+        apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev));
+        
+        initMockChats();
+        PetSystem.init(); // 初始化桌宠
+        
+    } catch (e) {
+        console.error("启动加载错误:", e);
+    }
+};
         /* --- 🧠 Memory System --- */
         const MemorySystem = {
             overlay: document.getElementById('memoryOverlay'),
@@ -1518,7 +1540,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function setupTextSaver(id) { document.getElementById(id).addEventListener('input',function(){localStorage.setItem(id,this.innerText);}); }
         function loadText(id) { const v=localStorage.getItem(id);if(v)document.getElementById(id).innerText=v; }
         function loadSavedImg(k,t,b) { const d=localStorage.getItem(k);if(d){const el=document.getElementById(t);el.src=d;if(b)el.style.display='block';if(t==='coverImg')document.getElementById('coverHint').style.display='none';} }
-        function loadSavedIcon(k,t,p) { const d=localStorage.getItem(k);if(d){document.getElementById(t).innerHTML=`<img src="${d}">`;if(p)document.getElementById(p).innerHTML=`<img src="${d}">`;} }
+        function loadSavedIcon(k, t, p) { const d = localStorage.getItem(k); if (d) { const el = document.getElementById(t); if (el) el.innerHTML = `<img src="${d}">`; if (p) { const prev = document.getElementById(p); if (prev) prev.innerHTML = `<img src="${d}">`; } } }
         function applyFont() { const u=document.getElementById('fontUrlInput').value.trim();if(u){new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');localStorage.setItem('custom_font_url',u);showToast("已应用");});} }
         function loadCustomFont() { const u=localStorage.getItem('custom_font_url');if(u)new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');}); }
         function loadWallpaper() { const d=localStorage.getItem('save_wallpaper');if(d)document.body.style.backgroundImage=`url(${d})`; }
