@@ -1030,6 +1030,15 @@
             <div class="group-title">全局字体</div>
             <div class="settings-group"><div class="list-item"><input type="text" id="fontUrlInput" class="text-input" placeholder="输入字体 URL"><button class="primary-btn" onclick="applyFont()">应用</button></div></div>
             <div class="group-title">桌面壁纸</div>
+            <!-- 插入到 外观设置 的 settings-content 里 -->
+            <div class="group-title">组件布局调整</div>
+            <div class="settings-group">
+            <div class="list-item" style="display:block; padding: 15px;">
+            <div style="margin-bottom:5px; font-size:14px; color:#666;">第四行字位置 (上下偏移)</div>
+            <!-- 默认值给个 -2，范围 -50 到 50 -->
+            <input type="range" id="tagPosInput" min="-50" max="50" step="1" value="-2" style="width:100%" oninput="updateTagPos(this.value)">
+            </div>
+            </div>
             <div class="settings-group"><div class="list-item"><button class="btn-upload" onclick="trigger('wallpaperInput')">更换壁纸</button><input type="file" id="wallpaperInput" accept="image/*" onchange="compressAndSave(this, null, 'save_wallpaper')"></div></div>
             <div style="text-align:center; padding-bottom:40px;"><button onclick="forceClearData()" style="color:red; background:none; border:none; font-size:14px;">重置所有数据</button></div>
         </div>
@@ -1190,7 +1199,13 @@
         
         initMockChats();
         PetSystem.init(); // 初始化桌宠
-        
+        // 加载第四行字的位置设置
+const savedTagMt = localStorage.getItem('tag_pill_mt');
+if(savedTagMt) {
+    document.getElementById('txt_loc').style.marginTop = savedTagMt + 'px';
+    const input = document.getElementById('tagPosInput');
+    if(input) input.value = savedTagMt; // 让滑块也同步到保存的位置
+}
     } catch (e) {
         console.error("启动加载错误:", e);
     }
@@ -1746,6 +1761,13 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function saveApiSettingsInternal() { const u=document.getElementById('api_url').value.trim().replace(/\/+$/,"");const k=document.getElementById('api_key').value.trim();const m=document.getElementById('api_model').value.trim();localStorage.setItem('gpt_url',u);localStorage.setItem('gpt_key',k);localStorage.setItem('gpt_model',m);return{cleanUrl:u,key:k,model:m}; }
         function loadApiSettings() { document.getElementById('api_url').value=localStorage.getItem('gpt_url')||'';document.getElementById('api_key').value=localStorage.getItem('gpt_key')||'';document.getElementById('api_model').value=localStorage.getItem('gpt_model')||''; }
         function clearData() { Modal.show('confirm-danger','清空数据？').then(r=>{if(r){localStorage.clear();location.reload();}}); }
+        function updateTagPos(val) {
+        const el = document.getElementById('txt_loc');
+        if(el) {
+        el.style.marginTop = val + 'px';
+        localStorage.setItem('tag_pill_mt', val); // 保存设置
+                   }
+          }
         function trigger(id) { document.getElementById(id).click(); }
         async function fetchModels() { const { cleanUrl, key } = saveApiSettingsInternal(); if (!cleanUrl || !key) return showToast("请先填写配置"); const statusEl = document.getElementById('fetch_status'); statusEl.innerText = "获取中..."; try { const res = await fetch(`${cleanUrl}/models`, { headers: { 'Authorization': `Bearer ${key}` } }); if (res.ok) { const data = await res.json(); const select = document.getElementById('model_select'); select.innerHTML = '<option value="">-- 选择模型 --</option>'; const list = data.data || data; if(Array.isArray(list)) { list.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.innerText = m.id; select.appendChild(opt); }); document.getElementById('model_selector_row').style.display = 'flex'; statusEl.innerText = "✅ 成功"; } } else { statusEl.innerText = "❌ 失败 " + res.status; } } catch (e) { statusEl.innerText = "❌ 网络错误"; } }
         async function testConnection() { const { cleanUrl, key, model } = saveApiSettingsInternal(); const resBox = document.getElementById('test_result'); resBox.innerText = "正在连接..."; if (!cleanUrl || !key) { resBox.innerText = "❌ 请先完善配置"; return; } try { const res = await fetch(`${cleanUrl}/chat/completions`, { method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: model || "gpt-3.5-turbo", messages: [{ role: "user", content: "Hi" }], max_tokens: 5 }) }); if (res.ok) { resBox.innerText = "✅ 连接成功"; showToast("连接成功"); } else { const err = await res.text(); resBox.innerText = `❌ 失败 (${res.status}): ${err.slice(0, 100)}`; } } catch (e) { resBox.innerText = "❌ 错误: " + e.message; } }
