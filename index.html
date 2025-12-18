@@ -2,14 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 关键：允许引用外部音频资源 (B站/网易云) -->
-    <meta name="referrer" content="no-referrer">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="referrer" content="no-referrer"> <!-- 关键：解决B站图片/音频403问题 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Kawaii OS + Memory (Pro Storage)</title>
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
-    <link rel="icon" type="image/jpg" href="https://i.postimg.cc/d30hx819/IMG-5616.jpg" />
+    <title>Kawaii OS (Ultimate)</title>
+    <!-- 默认图标 -->
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/100?text=OS" />
+    <link rel="icon" type="image/png" href="https://via.placeholder.com/100?text=OS" />
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.65);
@@ -26,15 +26,36 @@
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
 
-        body {
+        /* --- 🔥 终极防抖动方案 --- */
+        html, body {
             margin: 0; padding: 0;
-            background: linear-gradient(180deg, #fff5f8 0%, #ffeaf3 100%);
-            background-size: cover; background-position: center; background-attachment: fixed;
+            width: 100%; height: 100%;
+            overflow: hidden; /* 核心：禁止根元素滚动 */
+            position: fixed; /* 核心：锁定视口 */
+            top: 0; left: 0;
+            overscroll-behavior: none; /* 禁止橡皮筋 */
             font-family: var(--main-font);
             font-size: 16px;
-            height: 100vh; overflow: hidden; color: #666;
-            display: flex; flex-direction: column; position: relative;
+            color: #666;
         }
+
+        body {
+            background: linear-gradient(180deg, #fff5f8 0%, #ffeaf3 100%);
+            background-size: cover; background-position: center; 
+        }
+
+        /* 内部容器，只有它里面的特定区域能滚动 */
+        .container {
+            width: 100%; height: 100%; 
+            display: flex; flex-direction: column;
+            padding: 20px 24px;
+            padding-top: calc(80px + env(safe-area-inset-top)); 
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            position: relative;
+            overflow: hidden; /* 桌面不允许滚动 */
+        }
+        .container.pushed { transform: scale(0.9); opacity: 0; pointer-events: none; }
 
         #toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -43,15 +64,6 @@
             display: none; pointer-events: none; backdrop-filter: blur(5px);
         }
 
-        .container {
-            width: 100%; height: 100%; display: flex; flex-direction: column;
-            padding: 20px 24px;
-            padding-top: calc(80px + env(safe-area-inset-top)); 
-            padding-bottom: calc(10px + env(safe-area-inset-bottom));
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-        .container.pushed { transform: scale(0.9); opacity: 0; pointer-events: none; }
-
         .glass-panel {
             background: var(--glass-bg); backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow);
@@ -59,7 +71,7 @@
         }
 
         /* 桌面组件 */
-        .home-widget { height: 32vh; margin-bottom: 60px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; }
+        .home-widget { height: 28vh; margin-bottom: 20px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; }
         .widget-cover { height: 45%; width: 100%; background: rgba(255, 183, 206, 0.3); position: relative; cursor: pointer; }
         .widget-cover img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .cover-hint { position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 10px; color:rgba(255,255,255,0.8); pointer-events: none; }
@@ -73,8 +85,8 @@
         .tag-pill { display: inline-block; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-top: -2px; color: #ff9eb5; font-weight: bold; }
         .top-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; cursor: pointer; }
         
-        /* Middle Row */
-        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: auto; padding-bottom: 50px; align-items: center; }
+        /* Middle Row - 设置为 flex-1 占据剩余空间 */
+        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: 20px; align-items: center; min-height: 0; flex: 1; }
         .square-widget { flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); height: auto; width: 100%; }
         .square-widget img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
         .app-grid { flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 4px; }
@@ -86,7 +98,7 @@
         .svg-icon { width: 26px; height: 26px; fill: #ffb7ce; }
         
         /* Dock */
-        .dock { height: 110px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin-top: auto; margin-bottom: 15px; }
+        .dock { height: 90px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin-top: auto; margin-bottom: 5px; }
         .dock-app { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
         .dock-box { width: 56px; height: 56px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); overflow: hidden; }
         .dock-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -100,6 +112,7 @@
             background: #f2f2f7; z-index: 2000;
             transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex; flex-direction: column;
+            overflow: hidden; /* App 内部防止整体滚动 */
         }
         .fullscreen-app.active { transform: translateX(0); }
         
@@ -136,7 +149,7 @@
             display: flex; flex-direction: column;
         }
         #memoryOverlay.active { transform: translateX(0); }
-        .memory-list { flex: 1; overflow-y: auto; padding: 20px; }
+        .memory-list { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
         .memory-card { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; font-size: 14px; line-height: 1.5; border-left: 4px solid var(--primary-color); display: flex; gap: 10px; }
         .memory-footer { background: #fff; padding: 15px; border-top: 1px solid #ddd; padding-bottom: calc(20px + env(safe-area-inset-bottom)); display: flex; gap: 10px; }
 
@@ -168,7 +181,9 @@
         .header-status { font-size: 10px; color: #888; font-weight: normal; margin-top: 2px; }
         .header-right { position: absolute; right: 15px; color: var(--primary-color); font-size: 16px; cursor: pointer; z-index: 11; padding: 10px; display: flex; gap: 15px; }
 
-        .settings-content { flex: 1; overflow-y: auto; padding: 20px; }
+        /* 内容区域滚动优化 */
+        .settings-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        
         .settings-group { background: #fff; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 16px; }
         .list-item:last-child { border-bottom: none; }
@@ -213,7 +228,7 @@
         .checkbox-item input { margin-right: 10px; accent-color: var(--primary-color); }
 
         /* --- Chat List & Swipe --- */
-        .chat-list-container, .friend-list-container { flex: 1; overflow-y: auto; background: #fff; overflow-x: hidden; width: 100%; }
+        .chat-list-container, .friend-list-container { flex: 1; overflow-y: auto; background: #fff; overflow-x: hidden; width: 100%; -webkit-overflow-scrolling: touch; }
         
         .chat-swipe-wrapper { position: relative; overflow: hidden; border-bottom: 1px solid #f9f9f9; height: 74px; width: 100%; }
         .chat-delete-action {
@@ -247,7 +262,7 @@
         .nav-icon { width: 24px; height: 24px; margin-bottom: 2px; fill: currentColor; }
 
         /* --- Chat Window --- */
-        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background-size: cover; background-position: center; padding-bottom: 20px; overflow-anchor: auto; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background-size: cover; background-position: center; padding-bottom: 20px; overflow-anchor: auto; -webkit-overflow-scrolling: touch; }
         
         .msg-row { display: flex; align-items: flex-start; margin-bottom: 5px; animation: fadeIn 0.3s ease; position: relative; }
         .msg-row.self { justify-content: flex-end; }
@@ -330,7 +345,7 @@
         .btn-send { background: var(--primary-color); box-shadow: 0 2px 5px rgba(0,122,255,0.4); }
 
         /* --- Profile --- */
-        .profile-container { height: 100%; overflow-y: auto; background: #fff; padding-bottom: 20px; }
+        .profile-container { height: 100%; overflow-y: auto; background: #fff; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
         .profile-cover { height: 260px; width: 100%; background: #ccc; position: relative; overflow: hidden; }
         .profile-cover img { width: 100%; height: 100%; object-fit: cover; }
         .profile-back { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 15px; color: white; z-index: 10; font-size: 24px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); cursor: pointer; padding: 10px; }
@@ -435,7 +450,7 @@
         #vnHistoryPanel.active { transform: translateX(0); }
         .vn-hist-header { flex-shrink: 0; padding: calc(20px + env(safe-area-inset-top)) 20px 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: right; }
         .vn-hist-close { cursor:pointer; font-size: 14px; padding: 10px; color: #ccc; display: inline-block; }
-        .vn-hist-body { flex: 1; overflow-y: auto; padding: 20px; }
+        .vn-hist-body { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
         .vn-hist-item { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .vn-hist-name { font-weight: bold; color: #ff9eb5; font-size: 12px; margin-bottom: 4px; }
         .vn-hist-content { font-size: 14px; line-height: 1.4; }
@@ -608,6 +623,7 @@
             flex: 1; background: rgba(0,0,0,0.2); margin: 0 20px; 
             border-radius: 12px; overflow-y: auto; padding: 10px; 
             max-height: 200px;
+            -webkit-overflow-scrolling: touch;
         }
         .track-item { 
             display: flex; align-items: center; padding: 10px; 
@@ -1142,13 +1158,89 @@
     <input type="file" id="iconInput_music" accept="image/*" onchange="compressAndSave(this, 'icon_music', 'save_icon_music', 'preview_music', 'image/png')">
 
     <script>
-        // --- 💾 大容量存储系统 (IndexedDB) ---
+        // --- 💾 核心：大容量存储系统 (IndexedDB) 修复版 ---
         const ImageDB = {
             dbName: "KawaiiOS_Assets", storeName: "images", db: null,
-            async init() { return new Promise((resolve, reject) => { const request = indexedDB.open(this.dbName, 1); request.onupgradeneeded = (event) => { const db = event.target.result; if (!db.objectStoreNames.contains(this.storeName)) { db.createObjectStore(this.storeName); } }; request.onsuccess = (event) => { this.db = event.target.result; console.log("📦 大容量数据库连接成功"); resolve(this.db); }; request.onerror = (event) => reject("数据库错误: " + event.target.error); }); },
-            async setItem(key, val) { if (!this.db) await this.init(); return new Promise((resolve, reject) => { const tx = this.db.transaction([this.storeName], "readwrite"); const store = tx.objectStore(this.storeName); const req = store.put(val, key); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); },
-            async getItem(key) { if (!this.db) await this.init(); return new Promise((resolve) => { const tx = this.db.transaction([this.storeName], "readonly"); const store = tx.objectStore(this.storeName); const req = store.get(key); req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null); }); },
-            async removeItem(key) { if (!this.db) await this.init(); const tx = this.db.transaction([this.storeName], "readwrite"); tx.objectStore(this.storeName).delete(key); }
+            
+            async init() { 
+                return new Promise((resolve, reject) => { 
+                    const request = indexedDB.open(this.dbName, 1); 
+                    request.onupgradeneeded = (event) => { 
+                        const db = event.target.result; 
+                        if (!db.objectStoreNames.contains(this.storeName)) { db.createObjectStore(this.storeName); } 
+                    }; 
+                    request.onsuccess = (event) => { this.db = event.target.result; resolve(this.db); }; 
+                    request.onerror = (event) => reject("DB Init Fail"); 
+                }); 
+            },
+
+            async setItem(key, val) { 
+                if (!this.db) await this.init(); 
+                return new Promise((resolve, reject) => { 
+                    const tx = this.db.transaction([this.storeName], "readwrite"); 
+                    const req = tx.objectStore(this.storeName).put(val, key); 
+                    req.onsuccess = () => resolve(); 
+                    req.onerror = () => reject(); 
+                }); 
+            },
+
+            async getItem(key) { 
+                if (!this.db) await this.init(); 
+                return new Promise((resolve) => { 
+                    const tx = this.db.transaction([this.storeName], "readonly"); 
+                    const req = tx.objectStore(this.storeName).get(key); 
+                    req.onsuccess = () => resolve(req.result || null); 
+                    req.onerror = () => resolve(null); 
+                }); 
+            },
+            
+            async removeItem(key) { 
+                if (!this.db) await this.init(); 
+                const tx = this.db.transaction([this.storeName], "readwrite"); 
+                tx.objectStore(this.storeName).delete(key); 
+            },
+            
+            // --- 🔥 修复：使用 Cursor 遍历确保数据完整导出 ---
+            async getAll() {
+                if (!this.db) await this.init();
+                return new Promise((resolve) => {
+                    const tx = this.db.transaction([this.storeName], "readonly");
+                    const store = tx.objectStore(this.storeName);
+                    const result = {};
+                    const req = store.openCursor();
+                    req.onsuccess = (e) => {
+                        const cursor = e.target.result;
+                        if(cursor) {
+                            result[cursor.key] = cursor.value;
+                            cursor.continue();
+                        } else {
+                            resolve(result); // 遍历结束
+                        }
+                    };
+                    req.onerror = () => resolve({});
+                });
+            },
+
+            // --- 🔥 修复：显式事务恢复数据 ---
+            async restore(dataObj) {
+                if (!this.db) await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction([this.storeName], "readwrite");
+                    const store = tx.objectStore(this.storeName);
+                    store.clear().onsuccess = () => {
+                        let count = 0;
+                        const keys = Object.keys(dataObj);
+                        if (keys.length === 0) return resolve();
+                        keys.forEach(key => {
+                            store.put(dataObj[key], key);
+                            count++;
+                            if (count === keys.length) resolve();
+                        });
+                    };
+                    tx.onabort = () => reject();
+                    tx.onerror = () => reject();
+                });
+            }
         };
         ImageDB.init();
 
@@ -1164,53 +1256,51 @@
         let activeChatId=null, activeChatName="", activeChatAvatar="", currentProfileId=null, isSelectionMode=false, selectedIndices=new Set(), longPressTimer, interactId=null, vnQueue=[], isVnInputMode=false, vnState={outfit:'default',face:'normal',bgName:''}, lastAutoScheduleIndex=-1, tempSpriteData=null;
 
         window.onload = function() {
-    try {
-        // 加载文本
-        loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc');
-        // 加载图片 (支持 DB)
-        loadSavedImg('save_cover', 'coverImg', true);
-        loadSavedImg('save_body', 'bodyBgImg', true);
-        loadSavedImg('save_avatar', 'avatarImg', false);
-        loadSavedImg('save_square', 'squareImg', false);
-        // 初始化监听器
-        setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc');
-        loadCustomFont(); loadWallpaper(); loadApiSettings();
+            try {
+                // 加载文本
+                loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc');
+                
+                // --- 修复：确保壁纸加载 ---
+                loadWallpaper(); 
 
-        // 🔥 修复后的图标加载列表 (专门对应现在的 Dock 栏 ID)
-        const apps = [
-            // 聊天 (key: 存储键名, id: 界面上的ID, prev: 设置里的预览图ID)
-            {key: 'save_icon_chat', id: 'icon_chat', prev: 'preview_chat'},
-            {key: 'save_icon_world', id: 'icon_world', prev: 'preview_world'},
-            {key: 'save_icon_interact', id: 'icon_interact', prev: 'preview_interact'},
-            {key: 'save_icon_appearance', id: 'icon_appearance', prev: 'preview_appearance'},
-            {key: 'save_icon_api', id: 'icon_api', prev: 'preview_api'},
-            
-            // 地图 (注意：这里 ID 改成了 icon_dock_map)
-            {key: 'save_icon_map', id: 'icon_dock_map', prev: 'preview_map'},
-            
-            // 音乐 (注意：这里 ID 改成了 icon_dock_music)
-            {key: 'save_icon_music', id: 'icon_dock_music', prev: 'preview_music'},
-            
-            // 桌宠
-            {key: 'save_icon_pet', id: 'icon_pet', prev: 'preview_pet'}
-        ];
+                // 加载图片 (支持 DB)
+                loadSavedImg('save_cover', 'coverImg', true);
+                loadSavedImg('save_body', 'bodyBgImg', true);
+                loadSavedImg('save_avatar', 'avatarImg', false);
+                loadSavedImg('save_square', 'squareImg', false);
+                
+                // 初始化监听器
+                setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc');
+                loadCustomFont(); loadApiSettings();
 
-        apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev));
-        
-        initMockChats();
-        PetSystem.init(); // 初始化桌宠
-        // 加载第四行字的位置设置
-        const savedTagPos = localStorage.getItem('tag_pill_pos');
-if(savedTagPos) {
-    // 这里的 style.transform 对应上面的修改
-    document.getElementById('txt_loc').style.transform = `translateY(${savedTagPos}px)`;
-    const input = document.getElementById('tagPosInput');
-    if(input) input.value = savedTagPos;
-}
-    } catch (e) {
-        console.error("启动加载错误:", e);
-    }
-};
+                // 图标加载
+                const apps = [
+                    {key: 'save_icon_chat', id: 'icon_chat', prev: 'preview_chat'},
+                    {key: 'save_icon_world', id: 'icon_world', prev: 'preview_world'},
+                    {key: 'save_icon_interact', id: 'icon_interact', prev: 'preview_interact'},
+                    {key: 'save_icon_appearance', id: 'icon_appearance', prev: 'preview_appearance'},
+                    {key: 'save_icon_api', id: 'icon_api', prev: 'preview_api'},
+                    {key: 'save_icon_map', id: 'icon_dock_map', prev: 'preview_map'},
+                    {key: 'save_icon_music', id: 'icon_dock_music', prev: 'preview_music'},
+                    {key: 'save_icon_pet', id: 'icon_pet', prev: 'preview_pet'}
+                ];
+
+                apps.forEach(app => loadSavedIcon(app.key, app.id, app.prev));
+                
+                initMockChats();
+                PetSystem.init(); 
+                
+                const savedTagPos = localStorage.getItem('tag_pill_pos');
+                if(savedTagPos) {
+                    document.getElementById('txt_loc').style.transform = `translateY(${savedTagPos}px)`;
+                    const input = document.getElementById('tagPosInput');
+                    if(input) input.value = savedTagPos;
+                }
+            } catch (e) {
+                console.error("启动加载错误:", e);
+            }
+        };
+
         /* --- 🧠 Memory System --- */
         const MemorySystem = {
             overlay: document.getElementById('memoryOverlay'),
@@ -1228,7 +1318,7 @@ if(savedTagPos) {
         function openMemoryPanel() { document.getElementById('memoryOverlay').classList.add('active'); MemorySystem.render(); }
         function closeMemoryPanel() { document.getElementById('memoryOverlay').classList.remove('active'); }
 
-        /* --- ✋ 触摸互动系统 (升级版：支持多回复) --- */
+        /* --- ✋ 触摸互动系统 --- */
         const TouchSystem = {
             config: [],
             editor: document.getElementById('touchEditor'),
@@ -1307,7 +1397,6 @@ if(savedTagPos) {
             const data = JSON.parse(localStorage.getItem(assetsKey)); 
             if(data.sprites.length > 0) { vnState.outfit = data.sprites[0].outfit || 'default'; vnState.face = 'normal'; } else { vnState.outfit = 'default'; vnState.face = 'normal'; } 
             
-            // Initial render
             updateInteractDisplay(); 
             
             document.getElementById('vnName').innerText = name; 
@@ -1513,7 +1602,6 @@ if(savedTagPos) {
         
         function handleSpriteUploadStart(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = async e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); const max = 1080; let w=img.width, h=img.height; if(w>max){h*=max/w;w=max;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); tempSpriteData = c.toDataURL('image/png', 0.8); document.getElementById('sprite-outfit-input').value = ''; document.getElementById('sprite-face-input').value = ''; document.getElementById('sprite-upload-overlay').classList.add('active'); } }; reader.readAsDataURL(input.files[0]); input.value=''; } }
         
-        // --- 🔥 修改后的 Sprite 保存逻辑 (DB) ---
         document.getElementById('btn-confirm-sprite').onclick = async function() { 
             const outfit = document.getElementById('sprite-outfit-input').value.trim() || 'default'; 
             const face = document.getElementById('sprite-face-input').value.trim() || 'normal'; 
@@ -1534,7 +1622,6 @@ if(savedTagPos) {
         
         function closeSpriteModal() { document.getElementById('sprite-upload-overlay').classList.remove('active'); tempSpriteData = null; }
         
-        // --- 🔥 修改后的背景图上传 (DB) ---
         function handleVNUpload(input, type) { 
             if (input.files && input.files[0]) { 
                 const reader = new FileReader(); 
@@ -1670,8 +1757,70 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function safeSetText(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
         function safeSetSrc(id, src) { const el = document.getElementById(id); if(el) el.src = src; }
         function saveProfile() { if (!currentProfileId) return; try { const nameVal = document.getElementById('p_name').innerText.trim(); const coverSrc = document.getElementById('p_cover_img').src; const avatarSrc = document.getElementById('p_avatar_img').src; const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const idx = list.findIndex(c => c.id == currentProfileId); if (idx !== -1) { list[idx].name = nameVal; list[idx].avatar = avatarSrc; localStorage.setItem('chat_list_data', JSON.stringify(list)); } const profileData = JSON.parse(localStorage.getItem('chat_profile_' + currentProfileId) || '{}'); profileData.cover = coverSrc; profileData.userAvatar = document.getElementById('p_user_avatar_img').src; profileData.userPersona = document.getElementById('p_user_persona').innerText; profileData.aiPersona = document.getElementById('p_ai_persona').innerText; ['gender','age','birth','job','sign'].forEach(k => profileData[k] = document.getElementById('p_'+k).innerText); localStorage.setItem('chat_profile_' + currentProfileId, JSON.stringify(profileData)); showToast("✅ 资料已保存"); renderChatList(); renderFriendList(); } catch (e) { alert("❌ 保存失败"); } }
-        function exportData() { const data = {}; for(let i=0; i<localStorage.length; i++) { const key = localStorage.key(i); data[key] = localStorage.getItem(key); } const blob = new Blob([JSON.stringify(data)], {type: "application/octet-stream"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `kawaii_full_backup_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { if(!input.files[0]) return; const r = new FileReader(); r.onload = async e => { try { const data = JSON.parse(e.target.result); if(await Modal.show('confirm-danger','恢复备份?','这会覆盖当前所有数据并刷新页面')) { localStorage.clear(); for(let k in data) localStorage.setItem(k, data[k]); location.reload(); } } catch(e) { alert("文件格式错误"); } }; r.readAsText(input.files[0]); input.value=''; }
+        
+        // --- 🔥 修复：全量数据导出 (游标模式) ---
+        async function exportData() {
+            showToast("正在打包数据，请稍候...");
+            const exportObj = {
+                meta: "KawaiiOS_Full_Backup",
+                date: new Date().getTime(),
+                localStorage: {},
+                imageDB: {}
+            };
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                exportObj.localStorage[key] = localStorage.getItem(key);
+            }
+            try {
+                // 使用 getAll 游标模式获取大容量数据
+                exportObj.imageDB = await ImageDB.getAll();
+            } catch(e) { console.error("ImageDB Export Error:", e); }
+            
+            const blob = new Blob([JSON.stringify(exportObj)], {type: "application/json"});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `kawaii_os_backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("导出完成！");
+        }
+
+        // --- 🔥 修复：全量数据导入 (事务恢复) ---
+        function importData(input) {
+            if(!input.files[0]) return;
+            const r = new FileReader();
+            r.onload = async e => {
+                try {
+                    const rawData = e.target.result;
+                    const data = JSON.parse(rawData);
+                    const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
+                    
+                    if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据(含图片)并刷新')) {
+                        showToast("正在恢复数据...");
+                        localStorage.clear();
+                        
+                        // 1. 恢复 LocalStorage
+                        const lsData = isFullBackup ? data.localStorage : data; 
+                        for(let k in lsData) { localStorage.setItem(k, lsData[k]); }
+                        
+                        // 2. 恢复 ImageDB (如果是新版备份)
+                        if(isFullBackup && data.imageDB) {
+                            await ImageDB.restore(data.imageDB);
+                        }
+                        
+                        showToast("恢复成功，即将刷新");
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                } catch(err) {
+                    console.error(err);
+                    alert("❌ 导入失败: 文件可能已损坏。\n" + err.message);
+                }
+            };
+            r.readAsText(input.files[0]);
+            input.value='';
+        }
+
         async function forceClearData() { if(await Modal.show('confirm-danger', '清空数据？')) { localStorage.clear(); location.reload(); } }
         function openSettingsApp() { document.getElementById('settingsApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); }
         function closeSettingsApp() { document.getElementById('settingsApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
@@ -1696,7 +1845,6 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function getChatHistory(id) { return JSON.parse(localStorage.getItem('chat_history_'+id)||'[]'); }
         function updateChatListPreview(id,c,t) { const l=JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const i=l.findIndex(x=>x.id==id); if(i!==-1){l[i].lastMsg=c;l[i].time=t;l[i].hidden=false;localStorage.setItem('chat_list_data',JSON.stringify(l));renderChatList();} }
         
-        // --- 🔥 修改后的通用图片保存 (DB) ---
         function compressAndSave(i, id, k, prev, format = 'image/jpeg') { 
             if (i.files[0]) { 
                 const r = new FileReader(); 
@@ -1707,7 +1855,6 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                         const c = document.createElement('canvas'); 
                         const ctx = c.getContext('2d'); 
                         let w = img.width, h = img.height; 
-                        // 容量大，可以放大一点
                         const max = id && id.includes('icon') ? 200 : 1080; 
                         if (w > h && w > max) { h *= max/w; w = max } else if (h > max) { w *= max/h; h = max }; 
                         c.width = w; c.height = h; 
@@ -1734,13 +1881,9 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function setupTextSaver(id) { document.getElementById(id).addEventListener('input',function(){localStorage.setItem(id,this.innerText);}); }
         function loadText(id) { const v=localStorage.getItem(id);if(v)document.getElementById(id).innerText=v; }
         
-        // --- 🔥 修改后的读取 (DB 优先) ---
         async function loadSavedImg(k,t,b) { 
             let d = localStorage.getItem(k); 
-            if(!d || d.length < 100) {
-                 const dbData = await ImageDB.getItem(k);
-                 if(dbData) d = dbData;
-            }
+            if(!d || d.length < 100) { const dbData = await ImageDB.getItem(k); if(dbData) d = dbData; }
             if(d){const el=document.getElementById(t);el.src=d;if(b)el.style.display='block';if(t==='coverImg')document.getElementById('coverHint').style.display='none';} 
         }
         
@@ -1754,23 +1897,21 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             } 
         }
         
+        async function loadWallpaper() { 
+            let d = await ImageDB.getItem('save_wallpaper');
+            if(!d) d = localStorage.getItem('save_wallpaper');
+            if(d) document.body.style.backgroundImage=`url(${d})`; 
+        }
+        
         function applyFont() { const u=document.getElementById('fontUrlInput').value.trim();if(u){new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');localStorage.setItem('custom_font_url',u);showToast("已应用");});} }
         function loadCustomFont() { const u=localStorage.getItem('custom_font_url');if(u)new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');}); }
-        function loadWallpaper() { const d=localStorage.getItem('save_wallpaper');if(d)document.body.style.backgroundImage=`url(${d})`; }
+        
         function initMockChats() { if(!localStorage.getItem('chat_list_data')){localStorage.setItem('chat_list_data',JSON.stringify([{id:'c1',name:'AI助手',avatar:'https://ui-avatars.com/api/?name=AI&background=007aff&color=fff',lastMsg:'你好',time:'12:00'}]));} }
         function saveApiSettingsUI() { saveApiSettingsInternal();showToast("API 已保存"); }
         function saveApiSettingsInternal() { const u=document.getElementById('api_url').value.trim().replace(/\/+$/,"");const k=document.getElementById('api_key').value.trim();const m=document.getElementById('api_model').value.trim();localStorage.setItem('gpt_url',u);localStorage.setItem('gpt_key',k);localStorage.setItem('gpt_model',m);return{cleanUrl:u,key:k,model:m}; }
         function loadApiSettings() { document.getElementById('api_url').value=localStorage.getItem('gpt_url')||'';document.getElementById('api_key').value=localStorage.getItem('gpt_key')||'';document.getElementById('api_model').value=localStorage.getItem('gpt_model')||''; }
         function clearData() { Modal.show('confirm-danger','清空数据？').then(r=>{if(r){localStorage.clear();location.reload();}}); }
-        function updateTagPos(val) {
-    const el = document.getElementById('txt_loc');
-    if(el) {
-        // ❌ 原来的写法： el.style.marginTop = val + 'px';
-        // ✅ 现在的写法 (位移)：
-        el.style.transform = `translateY(${val}px)`;
-        localStorage.setItem('tag_pill_pos', val); // 保存设置
-    }
-}
+        function updateTagPos(val) { const el = document.getElementById('txt_loc'); if(el) { el.style.transform = `translateY(${val}px)`; localStorage.setItem('tag_pill_pos', val); } }
         function trigger(id) { document.getElementById(id).click(); }
         async function fetchModels() { const { cleanUrl, key } = saveApiSettingsInternal(); if (!cleanUrl || !key) return showToast("请先填写配置"); const statusEl = document.getElementById('fetch_status'); statusEl.innerText = "获取中..."; try { const res = await fetch(`${cleanUrl}/models`, { headers: { 'Authorization': `Bearer ${key}` } }); if (res.ok) { const data = await res.json(); const select = document.getElementById('model_select'); select.innerHTML = '<option value="">-- 选择模型 --</option>'; const list = data.data || data; if(Array.isArray(list)) { list.forEach(m => { const opt = document.createElement('option'); opt.value = m.id; opt.innerText = m.id; select.appendChild(opt); }); document.getElementById('model_selector_row').style.display = 'flex'; statusEl.innerText = "✅ 成功"; } } else { statusEl.innerText = "❌ 失败 " + res.status; } } catch (e) { statusEl.innerText = "❌ 网络错误"; } }
         async function testConnection() { const { cleanUrl, key, model } = saveApiSettingsInternal(); const resBox = document.getElementById('test_result'); resBox.innerText = "正在连接..."; if (!cleanUrl || !key) { resBox.innerText = "❌ 请先完善配置"; return; } try { const res = await fetch(`${cleanUrl}/chat/completions`, { method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: model || "gpt-3.5-turbo", messages: [{ role: "user", content: "Hi" }], max_tokens: 5 }) }); if (res.ok) { resBox.innerText = "✅ 连接成功"; showToast("连接成功"); } else { const err = await res.text(); resBox.innerText = `❌ 失败 (${res.status}): ${err.slice(0, 100)}`; } } catch (e) { resBox.innerText = "❌ 错误: " + e.message; } }
@@ -1850,43 +1991,121 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             }
         };
 
-        /* --- 🎵 Music System (Final Version) --- */
+        /* --- 🎵 Music System (终极修复版：双重保险) --- */
         const MusicSystem = {
-            playlist: [], currentIndex: -1, audio: new Audio(), isPlaying: false, apiBase: 'https://api.injahow.cn/meting/', proxyBase: 'https://corsproxy.io/?',
-            init() { this.loadPlaylist(); this.audio.addEventListener('ended', () => this.next()); this.audio.addEventListener('timeupdate', () => this.updateProgress()); this.audio.addEventListener('error', () => { if(this.isPlaying) { showToast("资源失效，切歌中..."); this.next(); } }); this.renderPlaylist(); },
-            loadPlaylist() { const stored = JSON.parse(localStorage.getItem('music_playlist') || '[]'); this.playlist = stored.filter(t => t.platform !== 'local'); },
-            savePlaylist() { const toSave = this.playlist.filter(t => t.platform !== 'local'); localStorage.setItem('music_playlist', JSON.stringify(toSave)); },
-            async importFromLink() {
-                const input = await Modal.show('prompt', '导入歌曲', '直接粘贴 App 分享的整段文字即可'); if(!input) return; showToast("正在分析链接...");
-                const urlMatch = input.match(/(https?:\/\/[a-zA-Z0-9.\/?=&%-_]+)/); if (!urlMatch) return showToast("没找到链接呀");
-                let link = urlMatch[1];
-                if (link.includes('b23.tv') || link.includes('163cn.tv') || link.includes('163.com/m/song')) { showToast("正在解析短链接..."); link = await this.resolveShortUrl(link); if (!link) return showToast("短链解析失败，请复制完整链接"); }
-                const neteaseMatch = link.match(/id=(\d+)/); if (neteaseMatch) { await this.resolveSong(neteaseMatch[1], 'netease'); return; }
-                const biliMatch = link.match(/(BV\w+)/); if (biliMatch) { await this.resolveSong(biliMatch[1], 'bilibili'); return; }
-                showToast("未识别的歌曲/视频 ID");
+            playlist: [], currentIndex: -1, audio: new Audio(), isPlaying: false,
+            apiBase: 'https://api.injahow.cn/meting/',
+            proxyBase: 'https://corsproxy.io/?',
+
+            init() { 
+                this.loadPlaylist(); 
+                this.audio.addEventListener('ended', () => this.next()); 
+                this.audio.addEventListener('timeupdate', () => this.updateProgress()); 
+                this.audio.addEventListener('error', () => { if(this.isPlaying) { showToast("资源失效，自动切歌..."); this.next(); } }); 
+                this.renderPlaylist(); 
             },
-            async resolveShortUrl(shortUrl) { try { const res = await fetch(this.proxyBase + encodeURIComponent(shortUrl)); return res.url; } catch(e) { return null; } },
-            async resolveSong(id, server) { try { showToast("正在获取歌曲信息..."); const res = await fetch(`${this.apiBase}?server=${server}&type=song&id=${id}`); const data = await res.json(); if(data && data.length > 0) { const song = data[0]; this.addToPlaylist({ title: song.name, artist: song.artist, cover: song.pic, id: song.song_id || id, platform: server }); showToast("添加成功！"); } else { showToast("无法获取信息 (可能受限)"); } } catch(e) { showToast("API 网络错误"); } },
-            handleLocalUpload(input) { if(input.files && input.files[0]) { const file = input.files[0]; this.addToPlaylist({ title: file.name.replace(/\.[^/.]+$/, ""), artist: '本地上传', cover: 'https://via.placeholder.com/300?text=Local', url: URL.createObjectURL(file), platform: 'local' }); showToast("本地音乐已添加"); } },
-            addToPlaylist(track) { const exist = this.playlist.find(t => t.id === track.id && t.platform === track.platform); if(exist && track.platform !== 'local') return showToast("列表里已经有啦"); this.playlist.push(track); this.savePlaylist(); this.renderPlaylist(); if(this.playlist.length === 1) this.playIndex(0); },
-            updateCurrentCover(input) { if(this.currentIndex === -1 || !this.playlist[this.currentIndex]) return; if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w=img.width, h=img.height; if(w>300){h*=300/w;w=300;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const newCover = c.toDataURL('image/jpeg', 0.7); this.playlist[this.currentIndex].cover = newCover; this.savePlaylist(); document.getElementById('musicCover').src = newCover; this.renderPlaylist(); showToast("封面已更换"); } }; reader.readAsDataURL(input.files[0]); input.value = ''; } },
-            renderPlaylist() { const div = document.getElementById('musicPlaylist'); div.innerHTML = ''; this.playlist.forEach((t, i) => { const item = document.createElement('div'); item.className = `track-item ${i === this.currentIndex ? 'active' : ''}`; item.innerHTML = `<img src="${t.cover}" class="track-cover"><div class="track-info"><div style="font-size:14px;font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${t.title}</div><div style="font-size:12px;opacity:0.7;">${t.artist}</div></div><div style="color:red;padding:5px;" onclick="event.stopPropagation(); MusicSystem.removeTrack(${i})">×</div>`; item.onclick = () => this.playIndex(i); div.appendChild(item); }); },
-            removeTrack(index) { if(index === this.currentIndex) { this.audio.pause(); this.isPlaying = false; this.updateUI(true); } this.playlist.splice(index, 1); this.savePlaylist(); this.renderPlaylist(); if(this.playlist.length === 0) { document.getElementById('musicTitle').innerText = 'Not Playing'; document.getElementById('musicArtist').innerText = 'Select a song'; document.getElementById('musicCover').src = 'https://via.placeholder.com/300?text=Music'; } },
+            loadPlaylist() { const stored = JSON.parse(localStorage.getItem('music_playlist') || '[]'); this.playlist = stored.filter(t => t.platform); },
+            savePlaylist() { const toSave = this.playlist.filter(t => t.platform !== 'local'); localStorage.setItem('music_playlist', JSON.stringify(toSave)); },
+            
+            async importFromLink() {
+                const input = await Modal.show('prompt', '导入歌曲', '粘贴链接，失败时会自动询问ID'); 
+                if(!input) return; showToast("正在分析...");
+                
+                // 1. 尝试正则提取链接
+                const urlMatch = input.match(/(https?:\/\/[a-zA-Z0-9.\/?=&%-_#]+)/); 
+                let link = urlMatch ? urlMatch[1] : input; // 没找到链接就直接用原文尝试
+                let finalId = null; let platform = null;
+
+                // 2. 尝试解析链接
+                if (link.includes('bilibili') || link.includes('b23.tv')) {
+                    platform = 'bilibili';
+                    let bvMatch = link.match(/(BV[a-zA-Z0-9]{10})/);
+                    // 如果没找到BV号，尝试解析短链内容
+                    if (!bvMatch) { 
+                        showToast("解析短链中..."); 
+                        const resolvedHtml = await this.resolveShortUrl(link); 
+                        if (resolvedHtml) bvMatch = resolvedHtml.match(/(BV[a-zA-Z0-9]{10})/); 
+                    }
+                    if (bvMatch) finalId = bvMatch[1];
+                } 
+                else if (link.includes('163')) {
+                    platform = 'netease';
+                    let idMatch = link.match(/id=(\d+)/) || link.match(/song\/(\d+)/);
+                    if (!idMatch) { 
+                        showToast("解析短链中..."); 
+                        const resolvedHtml = await this.resolveShortUrl(link); 
+                        if (resolvedHtml) idMatch = resolvedHtml.match(/id=(\d+)/) || resolvedHtml.match(/song\/(\d+)/); 
+                    }
+                    if (idMatch) finalId = idMatch[1];
+                }
+
+                // 3. 失败时直接询问用户 ID (保底方案)
+                if (!finalId) {
+                   const manualId = await Modal.show('prompt', '解析失败，手动输入 ID', '', '例如: BVxxx 或 1836xxx');
+                   if(manualId) {
+                       finalId = manualId.trim();
+                       // 简单推断平台
+                       if(finalId.startsWith('BV')) platform = 'bilibili';
+                       else if(/^\d+$/.test(finalId)) platform = 'netease';
+                   }
+                }
+
+                if (finalId && platform) { await this.resolveSong(finalId, platform); } else { showToast("添加取消"); }
+            },
+            
+            async resolveShortUrl(shortUrl) { try { const res = await fetch(this.proxyBase + encodeURIComponent(shortUrl)); const text = await res.text(); return text + " " + res.url; } catch(e) { console.error(e); return null; } },
+            async resolveSong(id, server) { 
+                try { 
+                    showToast("正在获取歌曲信息..."); 
+                    const res = await fetch(`${this.apiBase}?server=${server}&type=song&id=${id}`); 
+                    const data = await res.json(); 
+                    if(data && data.length > 0) { 
+                        const song = data[0]; 
+                        const exists = this.playlist.find(t => t.id == (song.song_id || id) && t.platform == server);
+                        if(exists) return showToast("这首歌已经在列表里啦");
+                        this.addToPlaylist({ title: song.name, artist: song.artist, cover: song.pic, id: song.song_id || id, url_id: song.url_id || id, platform: server }); 
+                        showToast("添加成功！"); 
+                    } else { showToast("无法获取信息 (可能版权受限)"); } 
+                } catch(e) { console.error(e); showToast("API 网络错误"); } 
+            },
+
+            handleLocalUpload(input) { if(input.files && input.files[0]) { const file = input.files[0]; this.addToPlaylist({ title: file.name.replace(/\.[^/.]+$/, ""), artist: '本地上传', cover: 'https://via.placeholder.com/300?text=Local', url: URL.createObjectURL(file), platform: 'local' }); showToast("本地音乐已添加"); } input.value = ''; },
+            addToPlaylist(track) { this.playlist.push(track); this.savePlaylist(); this.renderPlaylist(); if(this.playlist.length === 1) this.playIndex(0); },
+            updateCurrentCover(input) { 
+                if(this.currentIndex === -1 || !this.playlist[this.currentIndex]) return; 
+                if (input.files && input.files[0]) { 
+                    const reader = new FileReader(); 
+                    reader.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w=img.width, h=img.height; if(w>300){h*=300/w;w=300;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const newCover = c.toDataURL('image/jpeg', 0.7); this.playlist[this.currentIndex].cover = newCover; this.savePlaylist(); document.getElementById('musicCover').src = newCover; this.renderPlaylist(); showToast("封面已更换"); } }; 
+                    reader.readAsDataURL(input.files[0]); input.value = ''; 
+                } 
+            },
+            renderPlaylist() { 
+                const div = document.getElementById('musicPlaylist'); div.innerHTML = ''; 
+                if(this.playlist.length === 0) { div.innerHTML = '<div style="color:white;opacity:0.6;text-align:center;padding:20px;font-size:12px;">列表是空的<br>快点击下方导入歌曲吧~</div>'; return; }
+                this.playlist.forEach((t, i) => { 
+                    const item = document.createElement('div'); item.className = `track-item ${i === this.currentIndex ? 'active' : ''}`; 
+                    item.innerHTML = `<img src="${t.cover || 'https://via.placeholder.com/40s'}" class="track-cover"><div class="track-info"><div style="font-size:14px;font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${t.title}</div><div style="font-size:12px;opacity:0.7;">${t.artist}</div></div><div style="color:white; opacity:0.6; padding:10px;" onclick="event.stopPropagation(); MusicSystem.removeTrack(${i})">×</div>`; 
+                    item.onclick = () => this.playIndex(i); div.appendChild(item); 
+                }); 
+            },
+            removeTrack(index) { if(index === this.currentIndex) { this.audio.pause(); this.isPlaying = false; this.updateUI(); } this.playlist.splice(index, 1); if(index < this.currentIndex) this.currentIndex--; this.savePlaylist(); this.renderPlaylist(); if(this.playlist.length === 0) { document.getElementById('musicTitle').innerText = 'Not Playing'; document.getElementById('musicArtist').innerText = 'Select a song'; document.getElementById('musicCover').src = 'https://via.placeholder.com/300?text=Music'; this.currentIndex = -1; } },
             async playIndex(index) {
                 if(index < 0 || index >= this.playlist.length) return;
                 this.currentIndex = index; const track = this.playlist[index];
                 document.getElementById('musicTitle').innerText = track.title; document.getElementById('musicArtist').innerText = track.artist; document.getElementById('musicCover').src = track.cover; this.renderPlaylist();
                 let playUrl = track.url; 
                 if (track.platform === 'netease' || track.platform === 'bilibili') {
-                    document.getElementById('musicArtist').innerText = "加载音频中...";
-                    try { const res = await fetch(`${this.apiBase}?server=${track.platform}&type=url&id=${track.id}`); const data = await res.json(); if(data && data.url) { playUrl = data.url; document.getElementById('musicArtist').innerText = track.artist; } else { showToast("无法播放 (资源限制)"); document.getElementById('musicArtist').innerText = "(失效)"; return; } } catch(e) { showToast("网络错误"); return; }
+                    document.getElementById('musicArtist').innerText = "加载资源中...";
+                    try { const fetchId = track.url_id || track.id; const res = await fetch(`${this.apiBase}?server=${track.platform}&type=url&id=${fetchId}`); const data = await res.json(); 
+                        if(data && data.url) { playUrl = data.url; document.getElementById('musicArtist').innerText = track.artist; } else { showToast("无法播放 (可能是VIP歌曲)"); document.getElementById('musicArtist').innerText = "(资源无效)"; setTimeout(() => this.next(), 2000); return; } 
+                    } catch(e) { showToast("网络错误"); return; }
                 }
-                this.audio.src = playUrl; this.audio.play().then(() => { this.isPlaying = true; this.updateUI(true); }).catch(e => { console.error(e); showToast("播放失败 (可能需要点击一下网页)"); this.isPlaying = false; this.updateUI(true); });
+                this.audio.src = playUrl; this.audio.play().then(() => { this.isPlaying = true; this.updateUI(); }).catch(e => { console.error(e); showToast("播放需要用户交互，请再点一次播放键"); this.isPlaying = false; this.updateUI(); });
             },
-            togglePlay() { if(this.playlist.length === 0) return; if(this.audio.paused) { this.audio.play(); this.isPlaying = true; } else { this.audio.pause(); this.isPlaying = false; } this.updateUI(true); },
+            togglePlay() { if(this.playlist.length === 0) return; if(this.audio.paused) { this.audio.play(); this.isPlaying = true; } else { this.audio.pause(); this.isPlaying = false; } this.updateUI(); },
             next() { if(this.playlist.length === 0) return; let nextIdx = this.currentIndex + 1; if(nextIdx >= this.playlist.length) nextIdx = 0; this.playIndex(nextIdx); },
             prev() { if(this.playlist.length === 0) return; let prevIdx = this.currentIndex - 1; if(prevIdx < 0) prevIdx = this.playlist.length - 1; this.playIndex(prevIdx); },
-            updateUI(animStateOnly) { const disc = document.getElementById('musicDisc'); const btn = document.getElementById('playBtn'); if(this.isPlaying) { disc.classList.add('playing'); btn.innerText = '⏸'; } else { disc.classList.remove('playing'); btn.innerText = '▶'; } },
+            updateUI() { const disc = document.getElementById('musicDisc'); const btn = document.getElementById('playBtn'); if(this.isPlaying) { disc.classList.add('playing'); btn.innerText = '⏸'; } else { disc.classList.remove('playing'); btn.innerText = '▶'; } },
             updateProgress() { if(this.audio.duration) { const pct = (this.audio.currentTime / this.audio.duration) * 100; document.getElementById('musicProgress').style.width = pct + '%'; } },
             seek(e) { if(!this.audio.duration) return; const bar = e.currentTarget; const rect = bar.getBoundingClientRect(); const clickX = e.clientX - rect.left; const pct = clickX / rect.width; this.audio.currentTime = pct * this.audio.duration; }
         };
