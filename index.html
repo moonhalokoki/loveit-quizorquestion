@@ -43,14 +43,41 @@
             display: none; pointer-events: none; backdrop-filter: blur(5px);
         }
 
+        /* --- 修改：布局容器改为禁止滚动，内部使用 Swiper --- */
         .container {
             width: 100%; height: 100%; display: flex; flex-direction: column;
-            padding: 20px 24px;
-            padding-top: calc(80px + env(safe-area-inset-top)); 
+            padding: 0; /* 去除内边距，交给内部页面处理 */
+            overflow: hidden; /* 禁止最外层滚动 */
+            padding-top: calc(20px + env(safe-area-inset-top)); 
             padding-bottom: calc(10px + env(safe-area-inset-bottom));
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .container.pushed { transform: scale(0.9); opacity: 0; pointer-events: none; }
+
+        /* --- 新增：横向滑动容器 --- */
+        .desktop-swiper {
+            display: flex;
+            flex: 1; /* 占据 Dock 上方所有空间 */
+            width: 100%;
+            overflow-x: auto; /* 允许横向滚动 */
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory; /* 强制吸附翻页 */
+            scroll-behavior: smooth;
+            scrollbar-width: none; 
+        }
+        .desktop-swiper::-webkit-scrollbar { display: none; }
+
+        /* --- 新增：每一页的样式 --- */
+        .desktop-page {
+            min-width: 100vw; /* 每一页宽度占满屏幕 */
+            height: 100%;
+            scroll-snap-align: start; /* 吸附起始位置 */
+            padding: 10px 24px;
+            padding-top: 40px; 
+            overflow-y: auto; /* 如果内容太长，页内允许垂直滚动 */
+            display: flex; 
+            flex-direction: column;
+        }
 
         .glass-panel {
             background: var(--glass-bg); backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(20px);
@@ -59,7 +86,7 @@
         }
 
         /* 桌面组件 */
-        .home-widget { height: 32vh; margin-bottom: 60px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; }
+        .home-widget { height: 32vh; margin-bottom: 20px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; }
         .widget-cover { height: 45%; width: 100%; background: rgba(255, 183, 206, 0.3); position: relative; cursor: pointer; }
         .widget-cover img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .cover-hint { position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 10px; color:rgba(255,255,255,0.8); pointer-events: none; }
@@ -73,11 +100,11 @@
         .tag-pill { display: inline-block; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-top: -2px; color: #ff9eb5; font-weight: bold; }
         .top-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; cursor: pointer; }
         
-        /* Middle Row */
-        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: auto; padding-bottom: 50px; align-items: center; }
-        .square-widget { flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); height: auto; width: 100%; }
+        /* Middle Row (第二页布局调整) */
+        .middle-row { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-bottom: auto; padding-bottom: 20px; align-items: center; }
+        .square-widget { width: 100%; height: 220px; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); flex-shrink: 0; }
         .square-widget img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
-        .app-grid { flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 4px; }
+        .app-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 4px; }
         .app-item { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .app-item:active { transform: scale(0.95); transition: 0.1s; }
         .app-icon { width: 56px; height: 56px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(255, 183, 206, 0.3); margin-bottom: 6px; overflow: hidden; }
@@ -85,8 +112,8 @@
         .app-label { font-size: 12px; font-weight: 600; color: #777; }
         .svg-icon { width: 26px; height: 26px; fill: #ffb7ce; }
         
-        /* Dock */
-        .dock { height: 110px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin-top: auto; margin-bottom: 15px; }
+        /* Dock (修改为固定底部) */
+        .dock { height: 110px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin: 0 24px 15px 24px; z-index: 100; }
         .dock-app { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
         .dock-box { width: 56px; height: 56px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); overflow: hidden; }
         .dock-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -971,33 +998,48 @@
     <input type="file" id="vnBgInput" style="display:none" accept="image/*" onchange="handleVNUpload(this, 'bg')">
     <input type="file" id="vnTachieInput" style="display:none" accept="image/*" onchange="handleSpriteUploadStart(this)">
 
-    <!-- 主屏幕 -->
+    <!-- 主屏幕 (Modified Structure for Swiping) -->
     <div class="container" id="desktop">
-        <div class="glass-panel home-widget">
-            <div class="top-btn" onclick="clearData()">↻</div>
-            <div class="widget-cover" onclick="trigger('coverInput')"><div class="cover-hint" id="coverHint">点此换封面</div><img src="" id="coverImg"></div>
-            <div class="avatar-wrapper" onclick="trigger('avatarInput')"><img src="https://ui-avatars.com/api/?name=Melody&background=ffd1dc&color=fff" class="avatar-img" id="avatarImg"></div>
-            <div class="widget-body" onclick="trigger('bodyInput')">
-                <img src="" class="widget-body-bg" id="bodyBgImg" style="display:none;">
-                <div class="info-content" onclick="event.stopPropagation()">
-                    <div id="txt_name" class="user-name" contenteditable="true">Melody</div>
-                    <div id="txt_bio1" class="bio-text" contenteditable="true">✨ 欢迎来到 Kawaii OS ✨</div>
-                    <div id="txt_bio2" class="bio-text" contenteditable="true">· Perfect Flow ·</div>
-                    <div id="txt_loc" class="tag-pill" contenteditable="true">📍 Tokyo</div>
+        
+        <!-- 横向滑动容器 -->
+        <div class="desktop-swiper">
+            
+            <!-- 第一页：个人信息 -->
+            <div class="desktop-page">
+                <div class="glass-panel home-widget">
+                    <div class="top-btn" onclick="clearData()">↻</div>
+                    <div class="widget-cover" onclick="trigger('coverInput')"><div class="cover-hint" id="coverHint">点此换封面</div><img src="" id="coverImg"></div>
+                    <div class="avatar-wrapper" onclick="trigger('avatarInput')"><img src="https://ui-avatars.com/api/?name=Melody&background=ffd1dc&color=fff" class="avatar-img" id="avatarImg"></div>
+                    <div class="widget-body" onclick="trigger('bodyInput')">
+                        <img src="" class="widget-body-bg" id="bodyBgImg" style="display:none;">
+                        <div class="info-content" onclick="event.stopPropagation()">
+                            <div id="txt_name" class="user-name" contenteditable="true">Melody</div>
+                            <div id="txt_bio1" class="bio-text" contenteditable="true">✨ 欢迎来到 Kawaii OS ✨</div>
+                            <div id="txt_bio2" class="bio-text" contenteditable="true">· Perfect Flow ·</div>
+                            <div id="txt_loc" class="tag-pill" contenteditable="true">📍 Tokyo</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align:center; color:#ccc; font-size:12px; margin-top:10px;">👉 向左滑动查看应用</div>
+            </div>
+
+            <!-- 第二页：应用列表 -->
+            <div class="desktop-page">
+                <div class="middle-row" style="display:block;">
+                    <div class="glass-panel square-widget" onclick="trigger('squareInput')" style="margin-bottom:20px;">
+                        <img src="https://via.placeholder.com/300/ffd1dc/ffffff?text=Img" id="squareImg">
+                    </div>
+                    <div class="app-grid">
+                        <div class="app-item" onclick="openChatListApp()"><div class="app-icon" id="icon_chat"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,13C10.9,13 10,12.1 10,11C10,9.9 10.9,9 12,9C13.1,9 14,9.9 14,11C14,12.1 13.1,13 12,13M18.5,10C19.3,10 20,10.7 20,11.5V12C20,12.8 19.3,13.5 18.5,13.5H16.5V10H18.5M5.5,10H7.5V13.5H5.5C4.7,13.5 4,12.8 4,12V11.5C4,10.7 4.7,10 5.5,10M12,5C15.5,5 18.5,6.5 20.2,9H16.5C16.5,6.8 14.5,5 12,5M12,17.5C14.5,17.5 16.5,15.7 16.5,13.5H20.2C18.5,16 15.5,17.5 12,17.5M7.5,9H3.8C5.5,6.5 8.5,5 12,5C9.5,5 7.5,6.8 7.5,9M7.5,13.5C7.5,15.7 9.5,17.5 12,17.5C8.5,17.5 5.5,16 3.8,13.5H7.5Z" /></svg></div><span class="app-label">聊天</span></div>
+                        <div class="app-item" onclick="openWorldbookApp()"><div class="app-icon" id="icon_world"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 2L14 6.5V17.5L19 13V2M6.5 5C4.55 5 2.45 5.4 1 6.5V21.16C1 21.41 1.25 21.66 1.5 21.66C1.6 21.66 1.65 21.59 1.75 21.59C3.1 20.94 5.05 20.5 6.5 20.5C8.45 20.5 10.55 20.9 12 22C13.35 20.9 15.8 20.5 17.5 20.5C19.15 20.5 20.85 20.81 22.25 21.56C22.35 21.61 22.4 21.59 22.5 21.59C22.75 21.59 23 21.34 23 21.09V6.5C22.4 6.05 21.75 5.75 21 5.5V19C19.9 18.65 18.7 18.5 17.5 18.5C15.8 18.5 13.35 18.9 12 20V6.5C10.55 5.4 8.45 5 6.5 5Z" /></svg></div><span class="app-label">世界书</span></div>
+                        <div class="app-item" onclick="openInteractSelector()"><div class="app-icon" id="icon_interact"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg></div><span class="app-label">互动</span></div>
+                        <div class="app-item" onclick="openSettingsApp()"><div class="app-icon" id="icon_appearance"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.35 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.35 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg></div><span class="app-label">外观</span></div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="middle-row">
-            <div class="glass-panel square-widget" onclick="trigger('squareInput')"><img src="https://via.placeholder.com/300/ffd1dc/ffffff?text=Img" id="squareImg"></div>
-            <div class="app-grid">
-                <div class="app-item" onclick="openChatListApp()"><div class="app-icon" id="icon_chat"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,13C10.9,13 10,12.1 10,11C10,9.9 10.9,9 12,9C13.1,9 14,9.9 14,11C14,12.1 13.1,13 12,13M18.5,10C19.3,10 20,10.7 20,11.5V12C20,12.8 19.3,13.5 18.5,13.5H16.5V10H18.5M5.5,10H7.5V13.5H5.5C4.7,13.5 4,12.8 4,12V11.5C4,10.7 4.7,10 5.5,10M12,5C15.5,5 18.5,6.5 20.2,9H16.5C16.5,6.8 14.5,5 12,5M12,17.5C14.5,17.5 16.5,15.7 16.5,13.5H20.2C18.5,16 15.5,17.5 12,17.5M7.5,9H3.8C5.5,6.5 8.5,5 12,5C9.5,5 7.5,6.8 7.5,9M7.5,13.5C7.5,15.7 9.5,17.5 12,17.5C8.5,17.5 5.5,16 3.8,13.5H7.5Z" /></svg></div><span class="app-label">聊天</span></div>
-                <div class="app-item" onclick="openWorldbookApp()"><div class="app-icon" id="icon_world"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 2L14 6.5V17.5L19 13V2M6.5 5C4.55 5 2.45 5.4 1 6.5V21.16C1 21.41 1.25 21.66 1.5 21.66C1.6 21.66 1.65 21.59 1.75 21.59C3.1 20.94 5.05 20.5 6.5 20.5C8.45 20.5 10.55 20.9 12 22C13.35 20.9 15.8 20.5 17.5 20.5C19.15 20.5 20.85 20.81 22.25 21.56C22.35 21.61 22.4 21.59 22.5 21.59C22.75 21.59 23 21.34 23 21.09V6.5C22.4 6.05 21.75 5.75 21 5.5V19C19.9 18.65 18.7 18.5 17.5 18.5C15.8 18.5 13.35 18.9 12 20V6.5C10.55 5.4 8.45 5 6.5 5Z" /></svg></div><span class="app-label">世界书</span></div>
-                <div class="app-item" onclick="openInteractSelector()"><div class="app-icon" id="icon_interact"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" /></svg></div><span class="app-label">互动</span></div>
-                <div class="app-item" onclick="openSettingsApp()"><div class="app-icon" id="icon_appearance"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.35 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.35 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" /></svg></div><span class="app-label">外观</span></div>
-            </div>
-        </div>
         
+        <!-- 固定 Dock 栏 -->
         <div class="dock">
             <div class="dock-app" onclick="openApiApp()"><div class="dock-box" id="icon_api"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12.89,3L14.85,3.4L11.11,21L9.15,20.6L12.89,3M19.59,12L16,8.41V5.58L22.42,12L16,18.41V15.58L19.59,12M1.58,12L8,5.58V8.41L4.41,12L8,15.58V18.41L1.58,12Z" /></svg></div><span class="app-label">API</span></div>
             <!-- 🐾 桌宠 APP 入口 -->
@@ -1670,8 +1712,111 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         function safeSetText(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
         function safeSetSrc(id, src) { const el = document.getElementById(id); if(el) el.src = src; }
         function saveProfile() { if (!currentProfileId) return; try { const nameVal = document.getElementById('p_name').innerText.trim(); const coverSrc = document.getElementById('p_cover_img').src; const avatarSrc = document.getElementById('p_avatar_img').src; const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const idx = list.findIndex(c => c.id == currentProfileId); if (idx !== -1) { list[idx].name = nameVal; list[idx].avatar = avatarSrc; localStorage.setItem('chat_list_data', JSON.stringify(list)); } const profileData = JSON.parse(localStorage.getItem('chat_profile_' + currentProfileId) || '{}'); profileData.cover = coverSrc; profileData.userAvatar = document.getElementById('p_user_avatar_img').src; profileData.userPersona = document.getElementById('p_user_persona').innerText; profileData.aiPersona = document.getElementById('p_ai_persona').innerText; ['gender','age','birth','job','sign'].forEach(k => profileData[k] = document.getElementById('p_'+k).innerText); localStorage.setItem('chat_profile_' + currentProfileId, JSON.stringify(profileData)); showToast("✅ 资料已保存"); renderChatList(); renderFriendList(); } catch (e) { alert("❌ 保存失败"); } }
-        function exportData() { const data = {}; for(let i=0; i<localStorage.length; i++) { const key = localStorage.key(i); data[key] = localStorage.getItem(key); } const blob = new Blob([JSON.stringify(data)], {type: "application/octet-stream"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `kawaii_full_backup_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { if(!input.files[0]) return; const r = new FileReader(); r.onload = async e => { try { const data = JSON.parse(e.target.result); if(await Modal.show('confirm-danger','恢复备份?','这会覆盖当前所有数据并刷新页面')) { localStorage.clear(); for(let k in data) localStorage.setItem(k, data[k]); location.reload(); } } catch(e) { alert("文件格式错误"); } }; r.readAsText(input.files[0]); input.value=''; }
+        
+        // --- 📦 新版导出功能 (包含 localStorage 和 IndexedDB) ---
+        async function exportData() {
+            showToast("正在打包数据...");
+            const backup = {
+                meta: "KawaiiOS_Full_Backup",
+                version: 1,
+                date: new Date().toISOString(),
+                localStorage: {},
+                indexedDB: []
+            };
+
+            // 1. 收集 LocalStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                backup.localStorage[key] = localStorage.getItem(key);
+            }
+
+            // 2. 收集 IndexedDB (ImageDB)
+            try {
+                if (!ImageDB.db) await ImageDB.init();
+                const tx = ImageDB.db.transaction([ImageDB.storeName], "readonly");
+                const store = tx.objectStore(ImageDB.storeName);
+                
+                // 使用游标遍历所有数据
+                await new Promise((resolve, reject) => {
+                    const request = store.openCursor();
+                    request.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            backup.indexedDB.push({ key: cursor.key, value: cursor.value });
+                            cursor.continue();
+                        } else {
+                            resolve();
+                        }
+                    };
+                    request.onerror = () => reject("DB Export Error");
+                });
+            } catch (e) {
+                console.warn("DB 导出部分失败或为空", e);
+            }
+
+            // 3. 生成文件下载
+            const blob = new Blob([JSON.stringify(backup)], { type: "application/json" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `kawaii_os_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("导出完成 ✅");
+        }
+
+        // --- 📥 新版导入功能 (支持 IndexedDB 恢复) ---
+        function importData(input) {
+            if (!input.files[0]) return;
+            const r = new FileReader();
+            r.onload = async e => {
+                try {
+                    const jsonStr = e.target.result;
+                    // 简单校验
+                    if (!jsonStr.startsWith("{")) throw new Error("不是有效的 JSON");
+                    
+                    const data = JSON.parse(jsonStr);
+
+                    // 检查是不是新版备份 (有 meta 字段)
+                    const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
+
+                    if (await Modal.show('confirm-danger', '恢复备份?', '这将清空当前所有数据 (包括聊天记录和图片) 并刷新页面。')) {
+                        showToast("正在恢复...");
+                        
+                        // 1. 清空现有数据
+                        localStorage.clear();
+                        if (ImageDB.db) {
+                            const tx = ImageDB.db.transaction([ImageDB.storeName], "readwrite");
+                            await new Promise((resolve) => {
+                                tx.objectStore(ImageDB.storeName).clear().onsuccess = resolve;
+                            });
+                        }
+
+                        // 2. 恢复 LocalStorage
+                        const lsData = isFullBackup ? data.localStorage : data; // 兼容旧版
+                        for (let k in lsData) {
+                            localStorage.setItem(k, lsData[k]);
+                        }
+
+                        // 3. 恢复 IndexedDB (如果是新版备份)
+                        if (isFullBackup && data.indexedDB && Array.isArray(data.indexedDB)) {
+                            for (const item of data.indexedDB) {
+                                await ImageDB.setItem(item.key, item.value);
+                            }
+                        }
+
+                        showToast("恢复成功，即将刷新");
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("❌ 文件格式错误: 请确保上传的是本系统导出的 .json 文件。\n详细信息: " + e.message);
+                }
+            };
+            r.readAsText(input.files[0]);
+            input.value = '';
+        }
+
         async function forceClearData() { if(await Modal.show('confirm-danger', '清空数据？')) { localStorage.clear(); location.reload(); } }
         function openSettingsApp() { document.getElementById('settingsApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); }
         function closeSettingsApp() { document.getElementById('settingsApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
