@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Kawaii OS + Memory</title>
+    <title>Kawaii OS + Memory (Pro Storage)</title>
     <link rel="apple-touch-icon" href="111" />
     <link rel="icon" type="image/jpg" href="111" />
     <style>
@@ -1133,6 +1133,16 @@
     <input type="file" id="iconInput_music" accept="image/*" onchange="compressAndSave(this, 'icon_music', 'save_icon_music', 'preview_music', 'image/png')">
 
     <script>
+        // --- 💾 大容量存储系统 (IndexedDB) ---
+        const ImageDB = {
+            dbName: "KawaiiOS_Assets", storeName: "images", db: null,
+            async init() { return new Promise((resolve, reject) => { const request = indexedDB.open(this.dbName, 1); request.onupgradeneeded = (event) => { const db = event.target.result; if (!db.objectStoreNames.contains(this.storeName)) { db.createObjectStore(this.storeName); } }; request.onsuccess = (event) => { this.db = event.target.result; console.log("📦 大容量数据库连接成功"); resolve(this.db); }; request.onerror = (event) => reject("数据库错误: " + event.target.error); }); },
+            async setItem(key, val) { if (!this.db) await this.init(); return new Promise((resolve, reject) => { const tx = this.db.transaction([this.storeName], "readwrite"); const store = tx.objectStore(this.storeName); const req = store.put(val, key); req.onsuccess = () => resolve(); req.onerror = () => reject(req.error); }); },
+            async getItem(key) { if (!this.db) await this.init(); return new Promise((resolve) => { const tx = this.db.transaction([this.storeName], "readonly"); const store = tx.objectStore(this.storeName); const req = store.get(key); req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null); }); },
+            async removeItem(key) { if (!this.db) await this.init(); const tx = this.db.transaction([this.storeName], "readwrite"); tx.objectStore(this.storeName).delete(key); }
+        };
+        ImageDB.init();
+
         const Modal = {
             overlay: document.getElementById('custom-modal-overlay'), title: document.getElementById('modal-title'), desc: document.getElementById('modal-desc'), input: document.getElementById('modal-input'), stickerArea: document.getElementById('sticker-area'), btnConfirm: document.getElementById('btn-confirm'), btnCancel: document.getElementById('btn-cancel'), resolve: null,
             show(type, title, desc = '', placeholder = '') { return new Promise((resolve) => { this.resolve = resolve; this.title.innerText = title; this.desc.innerText = desc; this.desc.style.display = desc ? 'block' : 'none'; this.overlay.classList.add('active'); this.btnConfirm.className = 'modal-btn btn-confirm'; this.btnConfirm.innerText = '确定'; this.btnCancel.style.display = 'block'; this.stickerArea.style.display = 'none'; this.input.style.display = 'none'; if (type === 'prompt') { this.input.style.display = 'block'; this.input.value = ''; this.input.placeholder = placeholder; this.input.focus(); } else if (type === 'sticker') { this.stickerArea.style.display = 'grid'; this.btnConfirm.innerText = '上传新表情'; this.renderStickers(); } else if (type === 'confirm-danger') { this.btnConfirm.className = 'modal-btn btn-danger'; this.btnConfirm.innerText = '删除'; } else if (type === 'alert') { this.btnCancel.style.display = 'none'; } this.btnConfirm.onclick = () => { if(type === 'sticker') document.getElementById('stickerInput').click(); else { const val = type === 'prompt' ? this.input.value : true; this.close(val); } }; this.btnCancel.onclick = () => this.close(false); }); },
@@ -1148,7 +1158,7 @@
     try {
         // 加载文本
         loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc');
-        // 加载图片
+        // 加载图片 (支持 DB)
         loadSavedImg('save_cover', 'coverImg', true);
         loadSavedImg('save_body', 'bodyBgImg', true);
         loadSavedImg('save_avatar', 'avatarImg', false);
@@ -1280,26 +1290,51 @@
             if(!localStorage.getItem(assetsKey)) localStorage.setItem(assetsKey, JSON.stringify({ backgrounds: [], sprites: [] })); 
             const data = JSON.parse(localStorage.getItem(assetsKey)); 
             if(data.sprites.length > 0) { vnState.outfit = data.sprites[0].outfit || 'default'; vnState.face = 'normal'; } else { vnState.outfit = 'default'; vnState.face = 'normal'; } 
-            const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
-            const bgItem = data.backgrounds.find(b => b.url === profile.interact_bg); vnState.bgName = bgItem ? bgItem.name : ''; 
+            
+            // Initial render
             updateInteractDisplay(); 
+            
             document.getElementById('vnName').innerText = name; 
             vnQueue = ["点击屏幕推进剧情...", "右上角可切换输入模式。"]; 
             nextVnLine(); 
             startScheduleTimer(); 
         }
         
-        function updateInteractDisplay() { 
+        async function updateInteractDisplay() { 
             const assetsKey = 'chat_vn_assets_' + interactId; 
             const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
             const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
-            const bgEl = document.getElementById('vnBg'); 
-            if(bgEl) bgEl.src = profile.interact_bg || 'https://via.placeholder.com/400x800/222/fff?text=No+Background'; 
-            let targetSprite = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || data.sprites.find(s => s.outfit === vnState.outfit && s.face === 'normal') || data.sprites.find(s => s.outfit === vnState.outfit) || data.sprites[0]; 
-            const tachieEl = document.getElementById('vnTachie'); 
-            if(tachieEl) tachieEl.src = targetSprite ? targetSprite.url : 'https://via.placeholder.com/300x600/transparent/fff?text=No+Sprite'; 
             
-            // Render runtime touch areas
+            // 1. 设置背景 (支持 DB)
+            const bgEl = document.getElementById('vnBg');
+            if(bgEl) {
+                let bgSrc = profile.interact_bg;
+                if(bgSrc && !bgSrc.startsWith('data:image')) {
+                    const d = await ImageDB.getItem(bgSrc);
+                    if(d) bgSrc = d;
+                }
+                bgEl.src = bgSrc || 'https://via.placeholder.com/400x800/222/fff?text=No+Background';
+            }
+            
+            // 2. 设置立绘 (支持 DB)
+            let targetSprite = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || 
+                               data.sprites.find(s => s.outfit === vnState.outfit && s.face === 'normal') || 
+                               data.sprites.find(s => s.outfit === vnState.outfit) || 
+                               data.sprites[0]; 
+            const tachieEl = document.getElementById('vnTachie'); 
+            if(tachieEl) {
+                if(targetSprite) {
+                    let spSrc = targetSprite.url;
+                    if(targetSprite.isDB || (spSrc && !spSrc.startsWith('data:image'))) {
+                        const d = await ImageDB.getItem(spSrc);
+                        if(d) spSrc = d;
+                    }
+                    tachieEl.src = spSrc;
+                } else {
+                    tachieEl.src = 'https://via.placeholder.com/300x600/transparent/fff?text=No+Sprite';
+                }
+            }
+            
             renderTouchOverlays();
         }
 
@@ -1394,7 +1429,62 @@
         
         function openVNSettings() { document.getElementById('interactSettingsApp').classList.add('active'); renderAssetList('bg'); renderAssetList('sprite'); renderScheduleList(); }
         function closeVNSettings() { document.getElementById('interactSettingsApp').classList.remove('active'); }
-        function renderAssetList(type) { const assetsKey = 'chat_vn_assets_' + interactId; const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); const list = type === 'bg' ? data.backgrounds : data.sprites; const container = document.getElementById(type === 'bg' ? 'vnBgGrid' : 'vnSpriteGrid'); container.innerHTML = ''; if(list.length === 0) { container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;">无资源</div>'; return; } const currentProfile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); list.forEach((item, index) => { const div = document.createElement('div'); div.className = 'asset-item'; let displayName = item.name; if(type === 'sprite' && item.outfit) displayName = `${item.outfit} / ${item.face}`; div.innerHTML = `<img src="${item.url}"><div class="asset-name">${displayName}</div>`; if(type === 'bg') { if(item.url === currentProfile.interact_bg) div.classList.add('active'); div.onclick = () => { const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); profile.interact_bg = item.url; localStorage.setItem('chat_profile_'+interactId, JSON.stringify(profile)); vnState.bgName = item.name; showToast(`背景已切换: ${item.name}`); renderAssetList('bg'); if(activeChatId === interactId) updateInteractDisplay(); }; } else { div.onclick = () => { vnState.outfit = item.outfit; vnState.face = item.face; showToast(`立绘已切换`); if(activeChatId === interactId) updateInteractDisplay(); } } let timer; div.addEventListener('touchstart', () => { timer = setTimeout(async () => { if(await Modal.show('confirm-danger', `删除 ${displayName}?`)) { list.splice(index, 1); if(type==='bg') data.backgrounds = list; else data.sprites = list; localStorage.setItem(assetsKey, JSON.stringify(data)); renderAssetList(type); } }, 600); }); div.addEventListener('touchend', () => clearTimeout(timer)); container.appendChild(div); }); }
+        async function renderAssetList(type) { 
+            const assetsKey = 'chat_vn_assets_' + interactId; 
+            const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
+            const list = type === 'bg' ? data.backgrounds : data.sprites; 
+            const container = document.getElementById(type === 'bg' ? 'vnBgGrid' : 'vnSpriteGrid'); 
+            container.innerHTML = ''; 
+            if(list.length === 0) { container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;">无资源</div>'; return; } 
+            
+            const currentProfile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
+            
+            for(let index=0; index<list.length; index++) {
+                const item = list[index];
+                const div = document.createElement('div'); 
+                div.className = 'asset-item'; 
+                let displayName = item.name; 
+                if(type === 'sprite' && item.outfit) displayName = `${item.outfit} / ${item.face}`; 
+                
+                let imgSrc = item.url;
+                if(item.isDB || !item.url.startsWith('data:image')) {
+                    const dbImg = await ImageDB.getItem(item.url);
+                    if(dbImg) imgSrc = dbImg;
+                }
+                
+                div.innerHTML = `<img src="${imgSrc}"><div class="asset-name">${displayName}</div>`; 
+                
+                if(type === 'bg') { 
+                    if(item.url === currentProfile.interact_bg || imgSrc === currentProfile.interact_bg) div.classList.add('active'); 
+                    div.onclick = () => { 
+                        const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
+                        profile.interact_bg = item.url; 
+                        localStorage.setItem('chat_profile_'+interactId, JSON.stringify(profile)); 
+                        vnState.bgName = item.name; 
+                        showToast(`背景已切换: ${item.name}`); 
+                        renderAssetList('bg'); 
+                        if(activeChatId === interactId) updateInteractDisplay(); 
+                    }; 
+                } else { 
+                    div.onclick = () => { vnState.outfit = item.outfit; vnState.face = item.face; showToast(`立绘已切换`); if(activeChatId === interactId) updateInteractDisplay(); } 
+                } 
+                
+                let timer; 
+                div.addEventListener('touchstart', () => { 
+                    timer = setTimeout(async () => { 
+                        if(await Modal.show('confirm-danger', `删除 ${displayName}?`)) { 
+                            if(item.isDB) await ImageDB.removeItem(item.url);
+                            list.splice(index, 1); 
+                            if(type==='bg') data.backgrounds = list; else data.sprites = list; 
+                            localStorage.setItem(assetsKey, JSON.stringify(data)); 
+                            renderAssetList(type); 
+                        } 
+                    }, 600); 
+                }); 
+                div.addEventListener('touchend', () => clearTimeout(timer)); 
+                container.appendChild(div); 
+            }
+        }
         
         /* Auto Schedule */
         let scheduleTimer = null;
@@ -1405,10 +1495,64 @@
         function startScheduleTimer() { if (scheduleTimer) clearInterval(scheduleTimer); lastAutoScheduleIndex = -1; checkScheduleState(); scheduleTimer = setInterval(checkScheduleState, 60000); }
         function stopScheduleTimer() { if (scheduleTimer) clearInterval(scheduleTimer); scheduleTimer = null; }
         
-        function handleSpriteUploadStart(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = async e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); const max = 400; let w=img.width, h=img.height; if(w>max){h*=max/w;w=max;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); tempSpriteData = c.toDataURL('image/png'); document.getElementById('sprite-outfit-input').value = ''; document.getElementById('sprite-face-input').value = ''; document.getElementById('sprite-upload-overlay').classList.add('active'); } }; reader.readAsDataURL(input.files[0]); input.value=''; } }
-        document.getElementById('btn-confirm-sprite').onclick = function() { const outfit = document.getElementById('sprite-outfit-input').value.trim() || 'default'; const face = document.getElementById('sprite-face-input').value.trim() || 'normal'; if(tempSpriteData) { const assetsKey = 'chat_vn_assets_' + interactId; const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); data.sprites.push({ outfit: outfit, face: face, url: tempSpriteData, name: `${outfit}_${face}` }); localStorage.setItem(assetsKey, JSON.stringify(data)); renderAssetList('sprite'); showToast("立绘上传成功"); } closeSpriteModal(); };
+        function handleSpriteUploadStart(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = async e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); const max = 1080; let w=img.width, h=img.height; if(w>max){h*=max/w;w=max;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); tempSpriteData = c.toDataURL('image/png', 0.8); document.getElementById('sprite-outfit-input').value = ''; document.getElementById('sprite-face-input').value = ''; document.getElementById('sprite-upload-overlay').classList.add('active'); } }; reader.readAsDataURL(input.files[0]); input.value=''; } }
+        
+        // --- 🔥 修改后的 Sprite 保存逻辑 (DB) ---
+        document.getElementById('btn-confirm-sprite').onclick = async function() { 
+            const outfit = document.getElementById('sprite-outfit-input').value.trim() || 'default'; 
+            const face = document.getElementById('sprite-face-input').value.trim() || 'normal'; 
+            if(tempSpriteData) { 
+                const imgId = 'sp_' + Date.now();
+                await ImageDB.setItem(imgId, tempSpriteData);
+                
+                const assetsKey = 'chat_vn_assets_' + interactId; 
+                const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
+                data.sprites.push({ outfit: outfit, face: face, url: imgId, name: `${outfit}_${face}`, isDB: true }); 
+                
+                localStorage.setItem(assetsKey, JSON.stringify(data)); 
+                renderAssetList('sprite'); 
+                showToast("立绘上传成功 (DB)"); 
+            } 
+            closeSpriteModal(); 
+        };
+        
         function closeSpriteModal() { document.getElementById('sprite-upload-overlay').classList.remove('active'); tempSpriteData = null; }
-        function handleVNUpload(input, type) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = async e => { const img = new Image(); img.src = e.target.result; img.onload = async () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); const max = 800; let w=img.width, h=img.height; if(w>max){h*=max/w;w=max;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const url = c.toDataURL('image/jpeg', 0.7); const name = await Modal.show('prompt', '命名背景', '', '如: office'); if(name) { const assetsKey = 'chat_vn_assets_' + interactId; const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); data.backgrounds.push({name, url}); localStorage.setItem(assetsKey, JSON.stringify(data)); renderAssetList('bg'); showToast("上传成功"); } } }; reader.readAsDataURL(input.files[0]); input.value=''; } }
+        
+        // --- 🔥 修改后的背景图上传 (DB) ---
+        function handleVNUpload(input, type) { 
+            if (input.files && input.files[0]) { 
+                const reader = new FileReader(); 
+                reader.onload = async e => { 
+                    const img = new Image(); 
+                    img.src = e.target.result; 
+                    img.onload = async () => { 
+                        const c = document.createElement('canvas'); 
+                        const ctx = c.getContext('2d'); 
+                        const max = 1280; 
+                        let w=img.width, h=img.height; 
+                        if(w>max){h*=max/w;w=max;} 
+                        c.width=w; c.height=h; 
+                        ctx.drawImage(img,0,0,w,h); 
+                        const url = c.toDataURL('image/jpeg', 0.8); 
+                        
+                        const name = await Modal.show('prompt', '命名背景', '', '如: office'); 
+                        if(name) { 
+                            const imgId = 'bg_' + Date.now();
+                            await ImageDB.setItem(imgId, url);
+                            
+                            const assetsKey = 'chat_vn_assets_' + interactId; 
+                            const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
+                            data.backgrounds.push({name, url: imgId, isDB: true}); 
+                            
+                            localStorage.setItem(assetsKey, JSON.stringify(data)); 
+                            renderAssetList('bg'); 
+                            showToast("上传成功 (DB)"); 
+                        } 
+                    } 
+                }; 
+                reader.readAsDataURL(input.files[0]); input.value=''; 
+            } 
+        }
 
         /* Standard Chat Features */
         function createNewChat() { Modal.show('prompt', '新建聊天', '', '输入名字').then(name => { if(name){ const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const id = 'c' + Date.now(); list.unshift({ id: id, name: name, avatar: `https://ui-avatars.com/api/?name=${name}&background=random`, lastMsg: '新会话', time: '刚刚' }); localStorage.setItem('chat_list_data', JSON.stringify(list)); renderChatList(); } }); }
@@ -1535,12 +1679,65 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
         async function sendUserMessage() { const i=document.getElementById('chatInput'); const t=i.value.trim(); if(!t)return; i.value=''; const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); const m={role:'user',type:'text',content:t,time:time}; saveChatMessage(activeChatId,m); appendMessageToUI(m,-1); }
         function getChatHistory(id) { return JSON.parse(localStorage.getItem('chat_history_'+id)||'[]'); }
         function updateChatListPreview(id,c,t) { const l=JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const i=l.findIndex(x=>x.id==id); if(i!==-1){l[i].lastMsg=c;l[i].time=t;l[i].hidden=false;localStorage.setItem('chat_list_data',JSON.stringify(l));renderChatList();} }
-        function compressAndSave(i, id, k, prev, format = 'image/jpeg') { if (i.files[0]) { const r = new FileReader(); r.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w = img.width, h = img.height; const max = id && id.includes('icon') ? 200 : 800; if (w > h && w > max) { h *= max/w; w = max } else if (h > max) { w *= max/h; h = max }; c.width = w; c.height = h; ctx.drawImage(img, 0, 0, w, h); const d = c.toDataURL(format, 0.7); try { if (k) localStorage.setItem(k, d); if (id) { const el = document.getElementById(id); if(el.tagName === 'IMG') el.src = d; else el.innerHTML = `<img src="${d}">`; if (id === 'coverImg') document.getElementById('coverHint').style.display = 'none'; } if (prev) document.getElementById(prev).innerHTML = `<img src="${d}">`; showToast("已保存"); } catch (e) { alert("图片太大，存储失败"); } } }; r.readAsDataURL(i.files[0]); i.value = ''; } }
+        
+        // --- 🔥 修改后的通用图片保存 (DB) ---
+        function compressAndSave(i, id, k, prev, format = 'image/jpeg') { 
+            if (i.files[0]) { 
+                const r = new FileReader(); 
+                r.onload = e => { 
+                    const img = new Image(); 
+                    img.src = e.target.result; 
+                    img.onload = async () => { 
+                        const c = document.createElement('canvas'); 
+                        const ctx = c.getContext('2d'); 
+                        let w = img.width, h = img.height; 
+                        // 容量大，可以放大一点
+                        const max = id && id.includes('icon') ? 200 : 1080; 
+                        if (w > h && w > max) { h *= max/w; w = max } else if (h > max) { w *= max/h; h = max }; 
+                        c.width = w; c.height = h; 
+                        ctx.drawImage(img, 0, 0, w, h); 
+                        const d = c.toDataURL(format, 0.8); 
+                        try { 
+                            if (k) await ImageDB.setItem(k, d); 
+                            if (id) { 
+                                const el = document.getElementById(id); 
+                                if(el.tagName === 'IMG') el.src = d; 
+                                else el.innerHTML = `<img src="${d}">`; 
+                                if (id === 'coverImg') document.getElementById('coverHint').style.display = 'none'; 
+                            } 
+                            if (prev) document.getElementById(prev).innerHTML = `<img src="${d}">`; 
+                            showToast("已保存 (DB)"); 
+                        } catch (e) { alert("存储失败: " + e); } 
+                    } 
+                }; 
+                r.readAsDataURL(i.files[0]); i.value = ''; 
+            } 
+        }
+        
         function loadProfileImg(i,id) { compressAndSave(i,id,null); }
         function setupTextSaver(id) { document.getElementById(id).addEventListener('input',function(){localStorage.setItem(id,this.innerText);}); }
         function loadText(id) { const v=localStorage.getItem(id);if(v)document.getElementById(id).innerText=v; }
-        function loadSavedImg(k,t,b) { const d=localStorage.getItem(k);if(d){const el=document.getElementById(t);el.src=d;if(b)el.style.display='block';if(t==='coverImg')document.getElementById('coverHint').style.display='none';} }
-        function loadSavedIcon(k, t, p) { const d = localStorage.getItem(k); if (d) { const el = document.getElementById(t); if (el) el.innerHTML = `<img src="${d}">`; if (p) { const prev = document.getElementById(p); if (prev) prev.innerHTML = `<img src="${d}">`; } } }
+        
+        // --- 🔥 修改后的读取 (DB 优先) ---
+        async function loadSavedImg(k,t,b) { 
+            let d = localStorage.getItem(k); 
+            if(!d || d.length < 100) {
+                 const dbData = await ImageDB.getItem(k);
+                 if(dbData) d = dbData;
+            }
+            if(d){const el=document.getElementById(t);el.src=d;if(b)el.style.display='block';if(t==='coverImg')document.getElementById('coverHint').style.display='none';} 
+        }
+        
+        async function loadSavedIcon(k, t, p) { 
+            let d = localStorage.getItem(k); 
+            if(!d) d = await ImageDB.getItem(k);
+            if (d) { 
+                const el = document.getElementById(t); 
+                if (el) el.innerHTML = `<img src="${d}">`; 
+                if (p) { const prev = document.getElementById(p); if (prev) prev.innerHTML = `<img src="${d}">`; } 
+            } 
+        }
+        
         function applyFont() { const u=document.getElementById('fontUrlInput').value.trim();if(u){new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');localStorage.setItem('custom_font_url',u);showToast("已应用");});} }
         function loadCustomFont() { const u=localStorage.getItem('custom_font_url');if(u)new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');}); }
         function loadWallpaper() { const d=localStorage.getItem('save_wallpaper');if(d)document.body.style.backgroundImage=`url(${d})`; }
