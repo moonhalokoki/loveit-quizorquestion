@@ -2,12 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="no-referrer"> <!-- 关键：解决B站图片/音频403问题 -->
+    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Kawaii OS (Ultimate)</title>
-    <!-- 默认图标 -->
+    <title>Kawaii OS (Final)</title>
     <link rel="apple-touch-icon" href="https://via.placeholder.com/100?text=OS" />
     <link rel="icon" type="image/png" href="https://via.placeholder.com/100?text=OS" />
     <style>
@@ -26,36 +25,38 @@
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
 
-        /* --- 🔥 终极防抖动方案 --- */
+        /* --- 🎨 核心布局修复 --- */
         html, body {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            overflow: hidden; /* 核心：禁止根元素滚动 */
-            position: fixed; /* 核心：锁定视口 */
-            top: 0; left: 0;
-            overscroll-behavior: none; /* 禁止橡皮筋 */
+            overflow: hidden; /* 禁止出现滚动条 */
+            overscroll-behavior: none; /* 禁止橡皮筋效果 */
             font-family: var(--main-font);
             font-size: 16px;
             color: #666;
+            background: #ffeaf3; /* 默认底色，防闪烁 */
         }
 
-        body {
+        /* 🖼️ 独立背景层 (解决壁纸消失/白边问题) */
+        #wallpaper-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; /* 放在最底层 */
             background: linear-gradient(180deg, #fff5f8 0%, #ffeaf3 100%);
-            background-size: cover; background-position: center; 
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            transition: background-image 0.5s ease;
         }
 
-        /* 内部容器，只有它里面的特定区域能滚动 */
+        /* 内容容器 */
         .container {
             width: 100%; height: 100%; 
             display: flex; flex-direction: column;
             padding: 20px 24px;
-            padding-top: calc(80px + env(safe-area-inset-top)); 
-            padding-bottom: calc(10px + env(safe-area-inset-bottom));
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            padding-top: calc(60px + env(safe-area-inset-top)); 
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
             position: relative;
-            overflow: hidden; /* 桌面不允许滚动 */
+            z-index: 1;
         }
-        .container.pushed { transform: scale(0.9); opacity: 0; pointer-events: none; }
+        .container.pushed { transform: scale(0.9); opacity: 0; pointer-events: none; transition: 0.3s; }
 
         #toast {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -71,7 +72,7 @@
         }
 
         /* 桌面组件 */
-        .home-widget { height: 28vh; margin-bottom: 20px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; }
+        .home-widget { height: 30vh; margin-bottom: 20px; width: 100%; position: relative; display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; }
         .widget-cover { height: 45%; width: 100%; background: rgba(255, 183, 206, 0.3); position: relative; cursor: pointer; }
         .widget-cover img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .cover-hint { position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size: 10px; color:rgba(255,255,255,0.8); pointer-events: none; }
@@ -85,8 +86,8 @@
         .tag-pill { display: inline-block; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-top: -2px; color: #ff9eb5; font-weight: bold; }
         .top-btn { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; z-index: 10; cursor: pointer; }
         
-        /* Middle Row - 设置为 flex-1 占据剩余空间 */
-        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: 20px; align-items: center; min-height: 0; flex: 1; }
+        /* Middle Row (Flex 1 自动撑开填充空白) */
+        .middle-row { display: flex; gap: 16px; width: 100%; margin-bottom: 20px; align-items: center; flex: 1; min-height: 0; }
         .square-widget { flex: 1; aspect-ratio: 1 / 1; padding: 0; position: relative; cursor: pointer; border-radius: var(--radius-lg); height: auto; width: 100%; }
         .square-widget img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg); }
         .app-grid { flex: 1; aspect-ratio: 1 / 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 4px; }
@@ -98,7 +99,7 @@
         .svg-icon { width: 26px; height: 26px; fill: #ffb7ce; }
         
         /* Dock */
-        .dock { height: 90px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin-top: auto; margin-bottom: 5px; }
+        .dock { height: 96px; border-radius: 40px; display: flex; justify-content: space-evenly; align-items: center; padding: 0 10px; flex-shrink: 0; margin-top: auto; }
         .dock-app { display: flex; flex-direction: column; align-items: center; width: 60px; cursor: pointer; }
         .dock-box { width: 56px; height: 56px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); overflow: hidden; }
         .dock-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -112,7 +113,7 @@
             background: #f2f2f7; z-index: 2000;
             transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex; flex-direction: column;
-            overflow: hidden; /* App 内部防止整体滚动 */
+            overflow: hidden; /* APP 内部防止溢出 */
         }
         .fullscreen-app.active { transform: translateX(0); }
         
@@ -181,9 +182,7 @@
         .header-status { font-size: 10px; color: #888; font-weight: normal; margin-top: 2px; }
         .header-right { position: absolute; right: 15px; color: var(--primary-color); font-size: 16px; cursor: pointer; z-index: 11; padding: 10px; display: flex; gap: 15px; }
 
-        /* 内容区域滚动优化 */
         .settings-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
-        
         .settings-group { background: #fff; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
         .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 16px; }
         .list-item:last-child { border-bottom: none; }
@@ -637,6 +636,9 @@
     </style>
 </head>
 <body>
+
+    <!-- 🖼️ 独立壁纸层 -->
+    <div id="wallpaper-layer"></div>
 
     <!-- 🐾 桌宠本体 -->
     <div id="desktopPet">
@@ -1158,7 +1160,7 @@
     <input type="file" id="iconInput_music" accept="image/*" onchange="compressAndSave(this, 'icon_music', 'save_icon_music', 'preview_music', 'image/png')">
 
     <script>
-        // --- 💾 核心：大容量存储系统 (IndexedDB) 修复版 ---
+        // --- 💾 核心：大容量存储系统 (IndexedDB) ---
         const ImageDB = {
             dbName: "KawaiiOS_Assets", storeName: "images", db: null,
             
@@ -1200,7 +1202,7 @@
                 tx.objectStore(this.storeName).delete(key); 
             },
             
-            // --- 🔥 修复：使用 Cursor 遍历确保数据完整导出 ---
+            // --- 📤 导出全部数据 ---
             async getAll() {
                 if (!this.db) await this.init();
                 return new Promise((resolve) => {
@@ -1221,7 +1223,7 @@
                 });
             },
 
-            // --- 🔥 修复：显式事务恢复数据 ---
+            // --- 📥 恢复数据 ---
             async restore(dataObj) {
                 if (!this.db) await this.init();
                 return new Promise((resolve, reject) => {
@@ -1257,23 +1259,19 @@
 
         window.onload = function() {
             try {
-                // 加载文本
                 loadText('txt_name'); loadText('txt_bio1'); loadText('txt_bio2'); loadText('txt_loc');
                 
-                // --- 修复：确保壁纸加载 ---
+                // --- 🎨 核心修复：壁纸加载逻辑 ---
                 loadWallpaper(); 
 
-                // 加载图片 (支持 DB)
                 loadSavedImg('save_cover', 'coverImg', true);
                 loadSavedImg('save_body', 'bodyBgImg', true);
                 loadSavedImg('save_avatar', 'avatarImg', false);
                 loadSavedImg('save_square', 'squareImg', false);
                 
-                // 初始化监听器
                 setupTextSaver('txt_name'); setupTextSaver('txt_bio1'); setupTextSaver('txt_bio2'); setupTextSaver('txt_loc');
                 loadCustomFont(); loadApiSettings();
 
-                // 图标加载
                 const apps = [
                     {key: 'save_icon_chat', id: 'icon_chat', prev: 'preview_chat'},
                     {key: 'save_icon_world', id: 'icon_world', prev: 'preview_world'},
@@ -1301,7 +1299,124 @@
             }
         };
 
-        /* --- 🧠 Memory System --- */
+        /* --- 🎵 Music System (终极修复版：双重保险) --- */
+        const MusicSystem = {
+            playlist: [], currentIndex: -1, audio: new Audio(), isPlaying: false,
+            apiBase: 'https://api.injahow.cn/meting/',
+            proxyBase: 'https://corsproxy.io/?',
+
+            init() { 
+                this.loadPlaylist(); 
+                this.audio.addEventListener('ended', () => this.next()); 
+                this.audio.addEventListener('timeupdate', () => this.updateProgress()); 
+                this.audio.addEventListener('error', () => { if(this.isPlaying) { showToast("资源失效，自动切歌..."); this.next(); } }); 
+                this.renderPlaylist(); 
+            },
+            loadPlaylist() { const stored = JSON.parse(localStorage.getItem('music_playlist') || '[]'); this.playlist = stored.filter(t => t.platform); },
+            savePlaylist() { const toSave = this.playlist.filter(t => t.platform !== 'local'); localStorage.setItem('music_playlist', JSON.stringify(toSave)); },
+            
+            async importFromLink() {
+                const input = await Modal.show('prompt', '导入歌曲', '粘贴链接，失败时会自动询问ID'); 
+                if(!input) return; showToast("正在分析...");
+                
+                // 1. 尝试正则提取链接
+                const urlMatch = input.match(/(https?:\/\/[a-zA-Z0-9.\/?=&%-_#]+)/); 
+                let link = urlMatch ? urlMatch[1] : input; // 没找到链接就直接用原文尝试
+                let finalId = null; let platform = null;
+
+                // 2. 尝试解析链接
+                if (link.includes('bilibili') || link.includes('b23.tv')) {
+                    platform = 'bilibili';
+                    let bvMatch = link.match(/(BV[a-zA-Z0-9]{10})/);
+                    if (!bvMatch) { 
+                        showToast("解析短链中..."); 
+                        const resolvedHtml = await this.resolveShortUrl(link); 
+                        if (resolvedHtml) bvMatch = resolvedHtml.match(/(BV[a-zA-Z0-9]{10})/); 
+                    }
+                    if (bvMatch) finalId = bvMatch[1];
+                } 
+                else if (link.includes('163')) {
+                    platform = 'netease';
+                    let idMatch = link.match(/id=(\d+)/) || link.match(/song\/(\d+)/);
+                    if (!idMatch) { 
+                        showToast("解析短链中..."); 
+                        const resolvedHtml = await this.resolveShortUrl(link); 
+                        if (resolvedHtml) idMatch = resolvedHtml.match(/id=(\d+)/) || resolvedHtml.match(/song\/(\d+)/); 
+                    }
+                    if (idMatch) finalId = idMatch[1];
+                }
+
+                // 3. 失败时直接询问用户 ID (保底方案)
+                if (!finalId) {
+                   const manualId = await Modal.show('prompt', '解析失败，手动输入 ID', '', '例如: BVxxx 或 1836xxx');
+                   if(manualId) {
+                       finalId = manualId.trim();
+                       if(finalId.startsWith('BV')) platform = 'bilibili';
+                       else if(/^\d+$/.test(finalId)) platform = 'netease';
+                   }
+                }
+
+                if (finalId && platform) { await this.resolveSong(finalId, platform); } else { showToast("添加取消"); }
+            },
+            
+            async resolveShortUrl(shortUrl) { try { const res = await fetch(this.proxyBase + encodeURIComponent(shortUrl)); const text = await res.text(); return text + " " + res.url; } catch(e) { console.error(e); return null; } },
+            async resolveSong(id, server) { 
+                try { 
+                    showToast("正在获取歌曲信息..."); 
+                    const res = await fetch(`${this.apiBase}?server=${server}&type=song&id=${id}`); 
+                    const data = await res.json(); 
+                    if(data && data.length > 0) { 
+                        const song = data[0]; 
+                        const exists = this.playlist.find(t => t.id == (song.song_id || id) && t.platform == server);
+                        if(exists) return showToast("这首歌已经在列表里啦");
+                        this.addToPlaylist({ title: song.name, artist: song.artist, cover: song.pic, id: song.song_id || id, url_id: song.url_id || id, platform: server }); 
+                        showToast("添加成功！"); 
+                    } else { showToast("无法获取信息 (可能版权受限)"); } 
+                } catch(e) { console.error(e); showToast("API 网络错误"); } 
+            },
+
+            handleLocalUpload(input) { if(input.files && input.files[0]) { const file = input.files[0]; this.addToPlaylist({ title: file.name.replace(/\.[^/.]+$/, ""), artist: '本地上传', cover: 'https://via.placeholder.com/300?text=Local', url: URL.createObjectURL(file), platform: 'local' }); showToast("本地音乐已添加"); } input.value = ''; },
+            addToPlaylist(track) { this.playlist.push(track); this.savePlaylist(); this.renderPlaylist(); if(this.playlist.length === 1) this.playIndex(0); },
+            updateCurrentCover(input) { 
+                if(this.currentIndex === -1 || !this.playlist[this.currentIndex]) return; 
+                if (input.files && input.files[0]) { 
+                    const reader = new FileReader(); 
+                    reader.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w=img.width, h=img.height; if(w>300){h*=300/w;w=300;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const newCover = c.toDataURL('image/jpeg', 0.7); this.playlist[this.currentIndex].cover = newCover; this.savePlaylist(); document.getElementById('musicCover').src = newCover; this.renderPlaylist(); showToast("封面已更换"); } }; 
+                    reader.readAsDataURL(input.files[0]); input.value = ''; 
+                } 
+            },
+            renderPlaylist() { 
+                const div = document.getElementById('musicPlaylist'); div.innerHTML = ''; 
+                if(this.playlist.length === 0) { div.innerHTML = '<div style="color:white;opacity:0.6;text-align:center;padding:20px;font-size:12px;">列表是空的<br>快点击下方导入歌曲吧~</div>'; return; }
+                this.playlist.forEach((t, i) => { 
+                    const item = document.createElement('div'); item.className = `track-item ${i === this.currentIndex ? 'active' : ''}`; 
+                    item.innerHTML = `<img src="${t.cover || 'https://via.placeholder.com/40s'}" class="track-cover"><div class="track-info"><div style="font-size:14px;font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${t.title}</div><div style="font-size:12px;opacity:0.7;">${t.artist}</div></div><div style="color:white; opacity:0.6; padding:10px;" onclick="event.stopPropagation(); MusicSystem.removeTrack(${i})">×</div>`; 
+                    item.onclick = () => this.playIndex(i); div.appendChild(item); 
+                }); 
+            },
+            removeTrack(index) { if(index === this.currentIndex) { this.audio.pause(); this.isPlaying = false; this.updateUI(); } this.playlist.splice(index, 1); if(index < this.currentIndex) this.currentIndex--; this.savePlaylist(); this.renderPlaylist(); if(this.playlist.length === 0) { document.getElementById('musicTitle').innerText = 'Not Playing'; document.getElementById('musicArtist').innerText = 'Select a song'; document.getElementById('musicCover').src = 'https://via.placeholder.com/300?text=Music'; this.currentIndex = -1; } },
+            async playIndex(index) {
+                if(index < 0 || index >= this.playlist.length) return;
+                this.currentIndex = index; const track = this.playlist[index];
+                document.getElementById('musicTitle').innerText = track.title; document.getElementById('musicArtist').innerText = track.artist; document.getElementById('musicCover').src = track.cover; this.renderPlaylist();
+                let playUrl = track.url; 
+                if (track.platform === 'netease' || track.platform === 'bilibili') {
+                    document.getElementById('musicArtist').innerText = "加载资源中...";
+                    try { const fetchId = track.url_id || track.id; const res = await fetch(`${this.apiBase}?server=${track.platform}&type=url&id=${fetchId}`); const data = await res.json(); 
+                        if(data && data.url) { playUrl = data.url; document.getElementById('musicArtist').innerText = track.artist; } else { showToast("无法播放 (可能是VIP歌曲)"); document.getElementById('musicArtist').innerText = "(资源无效)"; setTimeout(() => this.next(), 2000); return; } 
+                    } catch(e) { showToast("网络错误"); return; }
+                }
+                this.audio.src = playUrl; this.audio.play().then(() => { this.isPlaying = true; this.updateUI(); }).catch(e => { console.error(e); showToast("播放需要用户交互，请再点一次播放键"); this.isPlaying = false; this.updateUI(); });
+            },
+            togglePlay() { if(this.playlist.length === 0) return; if(this.audio.paused) { this.audio.play(); this.isPlaying = true; } else { this.audio.pause(); this.isPlaying = false; } this.updateUI(); },
+            next() { if(this.playlist.length === 0) return; let nextIdx = this.currentIndex + 1; if(nextIdx >= this.playlist.length) nextIdx = 0; this.playIndex(nextIdx); },
+            prev() { if(this.playlist.length === 0) return; let prevIdx = this.currentIndex - 1; if(prevIdx < 0) prevIdx = this.playlist.length - 1; this.playIndex(prevIdx); },
+            updateUI() { const disc = document.getElementById('musicDisc'); const btn = document.getElementById('playBtn'); if(this.isPlaying) { disc.classList.add('playing'); btn.innerText = '⏸'; } else { disc.classList.remove('playing'); btn.innerText = '▶'; } },
+            updateProgress() { if(this.audio.duration) { const pct = (this.audio.currentTime / this.audio.duration) * 100; document.getElementById('musicProgress').style.width = pct + '%'; } },
+            seek(e) { if(!this.audio.duration) return; const bar = e.currentTarget; const rect = bar.getBoundingClientRect(); const clickX = e.clientX - rect.left; const pct = clickX / rect.width; this.audio.currentTime = pct * this.audio.duration; }
+        };
+
+        /* --- Memory & Other Systems (Unchanged) --- */
         const MemorySystem = {
             overlay: document.getElementById('memoryOverlay'),
             container: document.getElementById('memoryListContainer'),
@@ -1318,56 +1433,29 @@
         function openMemoryPanel() { document.getElementById('memoryOverlay').classList.add('active'); MemorySystem.render(); }
         function closeMemoryPanel() { document.getElementById('memoryOverlay').classList.remove('active'); }
 
-        /* --- ✋ 触摸互动系统 --- */
         const TouchSystem = {
-            config: [],
-            editor: document.getElementById('touchEditor'),
-            canvas: document.getElementById('touchCanvas'),
-            sprite: document.getElementById('touchEditSprite'),
-            list: document.getElementById('touchLayerList'),
-            selectedId: null,
+            config: [], editor: document.getElementById('touchEditor'), canvas: document.getElementById('touchCanvas'), sprite: document.getElementById('touchEditSprite'), list: document.getElementById('touchLayerList'), selectedId: null,
             open() { if(!interactId) return; this.loadConfig(); const assetsKey = 'chat_vn_assets_' + interactId; const data = JSON.parse(localStorage.getItem(assetsKey) || '{"sprites":[]}'); const s = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || data.sprites[0]; if(s) this.sprite.src = s.url; else this.sprite.src = ''; this.editor.classList.add('active'); this.renderCanvas(); this.renderList(); },
             close() { this.editor.classList.remove('active'); },
             loadConfig() { const key = 'chat_vn_touch_' + interactId; this.config = JSON.parse(localStorage.getItem(key) || '[]'); },
             save(silent=false) { const key = 'chat_vn_touch_' + interactId; localStorage.setItem(key, JSON.stringify(this.config)); if(!silent) { showToast("触摸设置已保存"); this.close(); if(activeChatId === interactId) updateInteractDisplay(); } },
-            addArea() { const name = prompt("输入区域名称 (如: 脸, 手, 胸)"); if(!name) return; const id = 't_' + Date.now(); this.config.push({ id: id, name: name, x: 40, y: 30, w: 20, h: 10, z: this.config.length + 1, responses: [] }); this.selectedId = id; this.renderCanvas(); this.renderList(); this.renderResponseList(); },
+            addArea() { const name = prompt("输入区域名称"); if(!name) return; const id = 't_' + Date.now(); this.config.push({ id: id, name: name, x: 40, y: 30, w: 20, h: 10, z: this.config.length + 1, responses: [] }); this.selectedId = id; this.renderCanvas(); this.renderList(); this.renderResponseList(); },
             deleteSelected() { if(!this.selectedId) return; this.config = this.config.filter(c => c.id !== this.selectedId); this.selectedId = null; this.renderCanvas(); this.renderList(); this.renderResponseList(); },
             moveLayer(index, dir) { if(dir === -1 && index > 0) { [this.config[index], this.config[index-1]] = [this.config[index-1], this.config[index]]; } else if (dir === 1 && index < this.config.length - 1) { [this.config[index], this.config[index+1]] = [this.config[index+1], this.config[index]]; } this.renderList(); this.renderCanvas(); },
             renderList() { this.list.innerHTML = ''; [...this.config].reverse().forEach((area, revIndex) => { const realIndex = this.config.length - 1 - revIndex; const div = document.createElement('div'); div.className = `layer-item ${area.id === this.selectedId ? 'active' : ''}`; div.innerHTML = `<span>${area.name}</span><div><span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, -1)">▲</span><span class="layer-btn" onclick="TouchSystem.moveLayer(${realIndex}, 1)">▼</span></div>`; div.onclick = (e) => { if(e.target.classList.contains('layer-btn')) return; this.selectedId = area.id; this.renderCanvas(); this.renderList(); this.renderResponseList(); }; this.list.appendChild(div); }); if(!this.selectedId) this.renderResponseList(); },
             renderCanvas() { const old = this.canvas.querySelectorAll('.touch-box'); old.forEach(o => o.remove()); this.config.forEach(area => { const box = document.createElement('div'); box.className = `touch-box ${area.id === this.selectedId ? 'selected' : ''}`; box.innerText = area.name; box.style.left = area.x + '%'; box.style.top = area.y + '%'; box.style.width = area.w + '%'; box.style.height = area.h + '%'; this.attachDrag(box, area); if(area.id === this.selectedId) { const handle = document.createElement('div'); handle.className = 'touch-handle'; this.attachResize(handle, area); box.appendChild(handle); } box.addEventListener('touchstart', (e) => { if(e.target !== box) return; this.selectedId = area.id; this.renderCanvas(); this.renderList(); this.renderResponseList(); }, {passive: false}); this.canvas.appendChild(box); }); },
             attachDrag(el, area) { let startX, startY, startLeft, startTop, cw, ch; el.addEventListener('touchstart', (e) => { if(e.target !== el) return; e.preventDefault(); const touch = e.touches[0]; startX = touch.clientX; startY = touch.clientY; cw = this.canvas.clientWidth; ch = this.canvas.clientHeight; startLeft = area.x; startTop = area.y; }, {passive: false}); el.addEventListener('touchmove', (e) => { if(e.target !== el) return; e.preventDefault(); const touch = e.touches[0]; const dx = (touch.clientX - startX) / cw * 100; const dy = (touch.clientY - startY) / ch * 100; area.x = startLeft + dx; area.y = startTop + dy; el.style.left = area.x + '%'; el.style.top = area.y + '%'; }, {passive: false}); },
             attachResize(el, area) { let startX, startY, startW, startH, cw, ch; el.addEventListener('touchstart', (e) => { e.stopPropagation(); e.preventDefault(); const touch = e.touches[0]; startX = touch.clientX; startY = touch.clientY; cw = this.canvas.clientWidth; ch = this.canvas.clientHeight; startW = area.w; startH = area.h; }, {passive: false}); el.addEventListener('touchmove', (e) => { e.stopPropagation(); e.preventDefault(); const touch = e.touches[0]; const dx = (touch.clientX - startX) / cw * 100; const dy = (touch.clientY - startY) / ch * 100; area.w = Math.max(5, startW + dx); area.h = Math.max(5, startH + dy); el.parentElement.style.width = area.w + '%'; el.parentElement.style.height = area.h + '%'; }, {passive: false}); },
-            
-            // 多回复管理
             renderResponseList() { const listEl = document.getElementById('touchResponseList'); listEl.innerHTML = ''; if(!this.selectedId) { listEl.innerHTML = '<div style="color:#ccc; font-size:10px;">请先点击上方选中一个区域</div>'; return; } const area = this.config.find(c => c.id === this.selectedId); if(!area.responses) area.responses = []; if(area.responses.length === 0) { listEl.innerHTML = '<div style="color:#ccc; font-size:10px;">暂无回复，点击右上角添加</div>'; return; } area.responses.forEach((text, idx) => { const row = document.createElement('div'); row.style.cssText = "display:flex; gap:5px; margin-bottom:4px;"; row.innerHTML = `<input type="text" class="text-input" value="${text}" style="flex:1; padding:2px 5px; font-size:12px;" onchange="TouchSystem.updateResponseText(${idx}, this.value)"><button style="background:#ffebee; color:red; border:none; border-radius:4px; width:20px; cursor:pointer;" onclick="TouchSystem.deleteResponse(${idx})">×</button>`; listEl.appendChild(row); }); },
             addResponse() { if(!this.selectedId) return showToast("请先选中区域"); const area = this.config.find(c => c.id === this.selectedId); if(!area.responses) area.responses = []; area.responses.push("不要摸这里啦~"); this.save(true); this.renderResponseList(); },
             updateResponseText(idx, val) { const area = this.config.find(c => c.id === this.selectedId); if(area && area.responses) { area.responses[idx] = val; this.save(true); } },
             deleteResponse(idx) { const area = this.config.find(c => c.id === this.selectedId); if(area && area.responses) { area.responses.splice(idx, 1); this.save(true); this.renderResponseList(); } }
         };
 
-        /* --- 🐾 桌宠系统 --- */
-        const PetSystem = {
-            el: document.getElementById('desktopPet'), img: document.getElementById('petImg'), bubble: document.getElementById('petBubble'), config: {}, isDragging: false, startX: 0, startY: 0, initialLeft: 0, initialTop: 0, pokeTimer: null, bubbleTimer: null, defaultImages: { normal: 'https://via.placeholder.com/100/ffd1dc/fff?text=Pet', drag: 'https://via.placeholder.com/100/aaa/fff?text=Help', poke: 'https://via.placeholder.com/100/ff9eb5/fff?text=OwO' },
-            init() { this.loadConfig(); this.renderSettings(); const pos = JSON.parse(localStorage.getItem('pet_position') || '{"x":50, "y":20}'); this.el.style.left = pos.x + '%'; this.el.style.top = pos.y + '%'; this.applySize(); if (this.config.enabled) this.el.style.display = 'block'; this.updateImage('normal'); this.el.addEventListener('touchstart', (e) => this.handleStart(e), {passive: false}); this.el.addEventListener('touchmove', (e) => this.handleMove(e), {passive: false}); this.el.addEventListener('touchend', (e) => this.handleEnd(e)); this.el.addEventListener('mousedown', (e) => this.handleStart(e)); document.addEventListener('mousemove', (e) => this.handleMove(e)); document.addEventListener('mouseup', (e) => this.handleEnd(e)); },
-            loadConfig() { const stored = JSON.parse(localStorage.getItem('pet_config') || '{}'); this.config = { enabled: stored.enabled || false, size: stored.size || 100, images: stored.images || {...this.defaultImages}, schedule: stored.schedule || [{ start: "00:00", end: "23:59", texts: ["戳我干嘛？", "陪我玩！", "OwO"] }] }; },
-            saveConfig() { localStorage.setItem('pet_config', JSON.stringify(this.config)); }, applySize() { this.el.style.width = this.config.size + 'px'; this.el.style.height = this.config.size + 'px'; }, updateSize(val) { this.config.size = parseInt(val); document.getElementById('petSizeDisplay').innerText = this.config.size; this.applySize(); this.saveConfig(); }, updateImage(state) { const src = this.config.images[state] || this.defaultImages[state]; this.img.src = src; },
-            handleStart(e) { if (e.type === 'mousedown') e.preventDefault(); this.isDragging = false; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; this.startX = clientX; this.startY = clientY; const rect = this.el.getBoundingClientRect(); this.initialLeft = rect.left; this.initialTop = rect.top; this.hasMoved = false; },
-            handleMove(e) { if (this.startX === 0 && this.startY === 0) return; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; if (!this.hasMoved && (Math.abs(clientX - this.startX) > 5 || Math.abs(clientY - this.startY) > 5)) { this.hasMoved = true; this.isDragging = true; this.updateImage('drag'); } if (this.isDragging) { if (e.cancelable) e.preventDefault(); const dx = clientX - this.startX; const dy = clientY - this.startY; this.el.style.left = (this.initialLeft + dx) + 'px'; this.el.style.top = (this.initialTop + dy) + 'px'; } },
-            handleEnd(e) { this.startX = 0; this.startY = 0; if (this.isDragging) { this.isDragging = false; this.updateImage('normal'); const rect = this.el.getBoundingClientRect(); const x = (rect.left / window.innerWidth) * 100; const y = (rect.top / window.innerHeight) * 100; localStorage.setItem('pet_position', JSON.stringify({x, y})); } else if (this.hasMoved === false) { this.poke(); } },
-            poke() { this.updateImage('poke'); if(navigator.vibrate) navigator.vibrate(50); const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0'); let validTexts = []; this.config.schedule.forEach(item => { if (timeStr >= item.start && timeStr <= item.end) { validTexts = validTexts.concat(item.texts); } }); if (validTexts.length === 0) validTexts = ["..."]; const text = validTexts[Math.floor(Math.random() * validTexts.length)]; this.showBubble(text); if (this.pokeTimer) clearTimeout(this.pokeTimer); this.pokeTimer = setTimeout(() => { this.updateImage('normal'); }, 2000); },
-            showBubble(text) { this.bubble.innerText = text; this.bubble.classList.add('active'); if (this.bubbleTimer) clearTimeout(this.bubbleTimer); this.bubbleTimer = setTimeout(() => { this.bubble.classList.remove('active'); }, 3000); },
-            renderSettings() { const sw = document.getElementById('petSwitch'); if (this.config.enabled) sw.classList.add('active'); else sw.classList.remove('active'); document.getElementById('petSizeInput').value = this.config.size; document.getElementById('petSizeDisplay').innerText = this.config.size; ['normal', 'drag', 'poke'].forEach(state => { const preview = document.getElementById('preview_pet_' + state); if (preview) preview.innerHTML = `<img src="${this.config.images[state] || this.defaultImages[state]}">`; }); this.renderSchedule(); },
-            renderSchedule() { const list = document.getElementById('petScheduleList'); list.innerHTML = ''; this.config.schedule.forEach((item, index) => { const div = document.createElement('div'); div.style.cssText = "background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:10px; margin-bottom:8px; position:relative;"; div.innerHTML = `<div style="font-weight:bold; color:#007aff; font-size:14px; margin-bottom:5px;">${item.start} - ${item.end}</div><div style="font-size:12px; color:#555;">${item.texts.join(' / ')}</div><div style="position:absolute; top:10px; right:10px; color:red; cursor:pointer;" onclick="PetSystem.deleteSchedule(${index})">×</div>`; list.appendChild(div); }); },
-            saveImage(input, state) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w=img.width, h=img.height; if(w>200){h*=200/w;w=200;} else if(h>200){w*=200/h;h=200;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const url = c.toDataURL('image/png'); this.config.images[state] = url; this.saveConfig(); this.renderSettings(); this.updateImage('normal'); showToast("图片已更新"); } }; reader.readAsDataURL(input.files[0]); input.value = ''; } },
-            addSchedule() { const start = document.getElementById('petStartTime').value; const end = document.getElementById('petEndTime').value; const textInput = document.getElementById('petDialogueInput'); const text = textInput.value.trim(); if (!start || !end || !text) return showToast("请填写完整"); let existing = this.config.schedule.find(s => s.start === start && s.end === end); if (existing) { existing.texts.push(text); } else { this.config.schedule.push({ start, end, texts: [text] }); } this.saveConfig(); this.renderSchedule(); textInput.value = ''; showToast("对话已添加"); },
-            deleteSchedule(index) { if (confirm("删除这个时间段设置？")) { this.config.schedule.splice(index, 1); this.saveConfig(); this.renderSchedule(); } }
-        };
-
         function openPetApp() { PetSystem.renderSettings(); document.getElementById('petSettingsApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); }
         function closePetApp() { document.getElementById('petSettingsApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
         function togglePetSwitch() { PetSystem.config.enabled = !PetSystem.config.enabled; PetSystem.saveConfig(); PetSystem.renderSettings(); document.getElementById('desktopPet').style.display = PetSystem.config.enabled ? 'block' : 'none'; }
 
-        /* Worldbook */
         function openWorldbookApp() { document.getElementById('worldbookApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); renderWorldbookList(); }
         function closeWorldbookApp() { document.getElementById('worldbookApp').classList.remove('active'); document.getElementById('desktop').classList.remove('pushed'); }
         async function createWorldbook() { const title = await Modal.show('prompt', '新建世界书', '', '标题'); if(!title) return; const books = JSON.parse(localStorage.getItem('worldbooks') || '[]'); books.push({ id: 'wb_'+Date.now(), title: title, mode: 'always', entries: [] }); localStorage.setItem('worldbooks', JSON.stringify(books)); renderWorldbookList(); }
@@ -1384,7 +1472,6 @@
         function renderWorldbookTags(ids) { const container = document.getElementById('p_wb_tags'); container.innerHTML = ''; if(!ids || ids.length === 0) return; const books = JSON.parse(localStorage.getItem('worldbooks') || '[]'); ids.forEach(id => { const b = books.find(x => x.id === id); if(b) { const tag = document.createElement('span'); tag.className = 'wb-tag'; tag.innerText = b.title; container.appendChild(tag); } }); }
         function getWorldbookPrompt(profileId, historyText) { const profile = JSON.parse(localStorage.getItem('chat_profile_'+profileId) || '{}'); const wbIds = profile.worldbook_ids || []; if(wbIds.length === 0) return ""; const books = JSON.parse(localStorage.getItem('worldbooks') || '[]'); let matchedEntries = []; books.forEach(book => { if(wbIds.includes(book.id)) { if (book.mode === 'keyword') { book.entries.forEach(entry => { if(entry.key && entry.content && historyText.includes(entry.key)) { matchedEntries.push(`[${book.title} - ${entry.key}]: ${entry.content}`); } }); } else { book.entries.forEach(entry => { if(entry.content) { const label = entry.key ? `[${entry.key}] ` : ''; matchedEntries.push(`${label}${entry.content}`); } }); } } }); if(matchedEntries.length === 0) return ""; return "\n[World Info / Lore]:\n" + matchedEntries.join("\n") + "\n"; }
 
-        /* Interact Mode */
         function openInteractSelector() { const list = JSON.parse(localStorage.getItem('chat_list_data') || '[]'); const container = document.getElementById('interactList'); container.innerHTML = ''; if(list.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center;">没有好友</div>'; } else { list.forEach(c => { const item = document.createElement('div'); item.className = 'selector-item'; item.innerHTML = `<img class="selector-avatar" src="${c.avatar}"><span class="selector-name">${c.name}</span>`; item.onclick = () => startInteraction(c.id, c.name); container.appendChild(item); }); } document.getElementById('interactSelector').classList.add('active'); }
         function closeInteractSelector() { document.getElementById('interactSelector').classList.remove('active'); }
         
@@ -1409,8 +1496,6 @@
             const assetsKey = 'chat_vn_assets_' + interactId; 
             const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
             const profile = JSON.parse(localStorage.getItem('chat_profile_'+interactId) || '{}'); 
-            
-            // 1. 设置背景 (支持 DB)
             const bgEl = document.getElementById('vnBg');
             if(bgEl) {
                 let bgSrc = profile.interact_bg;
@@ -1420,8 +1505,6 @@
                 }
                 bgEl.src = bgSrc || 'https://via.placeholder.com/400x800/222/fff?text=No+Background';
             }
-            
-            // 2. 设置立绘 (支持 DB)
             let targetSprite = data.sprites.find(s => s.outfit === vnState.outfit && s.face === vnState.face) || 
                                data.sprites.find(s => s.outfit === vnState.outfit && s.face === 'normal') || 
                                data.sprites.find(s => s.outfit === vnState.outfit) || 
@@ -1439,11 +1522,9 @@
                     tachieEl.src = 'https://via.placeholder.com/300x600/transparent/fff?text=No+Sprite';
                 }
             }
-            
             renderTouchOverlays();
         }
 
-        // --- 运行时触摸层渲染 ---
         function renderTouchOverlays() {
             const touchKey = 'chat_vn_touch_' + interactId;
             const areas = JSON.parse(localStorage.getItem(touchKey) || '[]');
@@ -1459,7 +1540,7 @@
                 div.style.width = area.w + '%';
                 div.style.height = area.h + '%';
                 div.onclick = (e) => {
-                    e.stopPropagation(); // 防止点穿到底部对话框
+                    e.stopPropagation(); 
                     handleTouchTrigger(area.name);
                 };
                 layer.appendChild(div);
@@ -1468,19 +1549,14 @@
         
         function handleTouchTrigger(areaName) {
             if(navigator.vibrate) navigator.vibrate(20);
-            
             const touchKey = 'chat_vn_touch_' + interactId;
             const areas = JSON.parse(localStorage.getItem(touchKey) || '[]');
             const targetArea = areas.find(a => a.name === areaName);
-            
             let replyText = "";
-            
-            // 随机抽取逻辑
             if(targetArea && targetArea.responses && targetArea.responses.length > 0) {
                 const randIndex = Math.floor(Math.random() * targetArea.responses.length);
                 replyText = targetArea.responses[randIndex];
             }
-
             if(replyText) {
                 document.getElementById('vnName').innerText = document.getElementById('vnName').innerText || 'TA';
                 document.getElementById('vnTextContent').innerText = replyText;
@@ -1591,7 +1667,6 @@
             }
         }
         
-        /* Auto Schedule */
         let scheduleTimer = null;
         function renderScheduleList() { const listKey = 'chat_vn_schedule_' + interactId; let schedule = JSON.parse(localStorage.getItem(listKey) || '[]').sort((a, b) => a.time.localeCompare(b.time)); const container = document.getElementById('scheduleList'); container.innerHTML = ''; if (schedule.length === 0) { container.innerHTML = '<div style="color:#999; font-size:12px; text-align:center; padding:5px;">暂无作息</div>'; return; } schedule.forEach((item, index) => { const typeMap = { 'everyday': '每天', 'weekday': '工作日', 'weekend': '周末' }; const div = document.createElement('div'); div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; font-size:13px;"; div.innerHTML = `<div style="display:flex; flex-direction:column;"><div><span style="font-weight:bold; color:var(--primary-color);">${item.time}</span> <span style="color:#999;font-size:10px;border:1px solid #ddd;padding:1px 4px;border-radius:4px;">${typeMap[item.type]||'每天'}</span></div><div style="color:#555;">👕 ${item.outfit}  🖼️ ${item.scene || '-'}</div></div><div style="color:red; cursor:pointer; padding:5px;" onclick="deleteScheduleItem(${index})">×</div>`; container.appendChild(div); }); }
         function addScheduleItem() { const type = document.getElementById('schedType').value; const time = document.getElementById('schedTime').value; const outfit = document.getElementById('schedOutfit').value.trim(); const scene = document.getElementById('schedScene').value.trim(); if (!time || !outfit) return showToast("请至少填写时间和服装ID"); const listKey = 'chat_vn_schedule_' + interactId; let schedule = JSON.parse(localStorage.getItem(listKey) || '[]'); schedule.push({ type, time, outfit, scene }); localStorage.setItem(listKey, JSON.stringify(schedule)); renderScheduleList(); checkScheduleState(); showToast("作息已添加"); }
@@ -1608,11 +1683,9 @@
             if(tempSpriteData) { 
                 const imgId = 'sp_' + Date.now();
                 await ImageDB.setItem(imgId, tempSpriteData);
-                
                 const assetsKey = 'chat_vn_assets_' + interactId; 
                 const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
                 data.sprites.push({ outfit: outfit, face: face, url: imgId, name: `${outfit}_${face}`, isDB: true }); 
-                
                 localStorage.setItem(assetsKey, JSON.stringify(data)); 
                 renderAssetList('sprite'); 
                 showToast("立绘上传成功 (DB)"); 
@@ -1637,16 +1710,13 @@
                         c.width=w; c.height=h; 
                         ctx.drawImage(img,0,0,w,h); 
                         const url = c.toDataURL('image/jpeg', 0.8); 
-                        
                         const name = await Modal.show('prompt', '命名背景', '', '如: office'); 
                         if(name) { 
                             const imgId = 'bg_' + Date.now();
                             await ImageDB.setItem(imgId, url);
-                            
                             const assetsKey = 'chat_vn_assets_' + interactId; 
                             const data = JSON.parse(localStorage.getItem(assetsKey) || '{"backgrounds":[], "sprites":[]}'); 
                             data.backgrounds.push({name, url: imgId, isDB: true}); 
-                            
                             localStorage.setItem(assetsKey, JSON.stringify(data)); 
                             renderAssetList('bg'); 
                             showToast("上传成功 (DB)"); 
@@ -1664,7 +1734,6 @@
         function renderChatList() { const container = document.getElementById('chatListContainer'); let list = JSON.parse(localStorage.getItem('chat_list_data') || '[]'); const visibleList = list.filter(c => !c.hidden); if (visibleList.length === 0) { container.innerHTML = '<div style="padding:50px; text-align:center; color:#ccc;">暂无消息</div>'; return; } let html = ''; visibleList.forEach(chat => { html += `<div class="chat-swipe-wrapper"><div class="chat-delete-action" onclick="deleteChat(event, '${chat.id}')">删除</div><div class="chat-item" id="chat-item-${chat.id}" onclick="openChatWindow('${chat.id}', '${chat.name}', '${chat.avatar}')"><div class="chat-avatar"><img src="${chat.avatar}"></div><div class="chat-content"><div class="chat-top-row"><span class="chat-name">${chat.name}</span><span class="chat-time">${chat.time}</span></div><div class="chat-preview">${chat.lastMsg}</div></div></div></div>`; }); container.innerHTML = html; initSwipeHandlers(); }
         function initSwipeHandlers() { document.querySelectorAll('.chat-item').forEach(item => { let startX, currentX; item.addEventListener('touchstart', e => { startX = e.touches[0].clientX; document.querySelectorAll('.chat-item.swiped').forEach(el => { if(el !== item) el.classList.remove('swiped'); }); }, {passive: true}); item.addEventListener('touchmove', e => { currentX = e.touches[0].clientX; }, {passive: true}); item.addEventListener('touchend', e => { const diff = startX - currentX; if(diff > 60) { item.classList.add('swiped'); } else if (diff < -60) { item.classList.remove('swiped'); } }); }); }
         
-        /* Chat Logic */
         async function deleteSelectedMessages() { if (selectedIndices.size === 0) return; if (!await Modal.show('confirm-danger', `删除 ${selectedIndices.size}条?`)) return; let history = getChatHistory(activeChatId); history = history.filter((_, idx) => !selectedIndices.has(Number(idx))); localStorage.setItem('chat_history_' + activeChatId, JSON.stringify(history)); updateChatListPreview(activeChatId, history.length>0?history[history.length-1].content:'', ''); exitSelectionMode(); renderChatMessages(); showToast("已删除"); }
         async function openStickerPanel() { const stickerObj = await Modal.show('sticker', '选择表情包'); if(stickerObj && stickerObj.url) sendSpecialMessage('sticker', stickerObj.url, stickerObj.desc); }
         function saveNewSticker(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = async () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w=img.width, h=img.height; if(w>100){h*=100/w;w=100;} c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); const url = c.toDataURL('image/webp', 0.5); const desc = await Modal.show('prompt', '含义', ''); if(desc) { const list = JSON.parse(localStorage.getItem('saved_stickers') || '[]'); list.push({url: url, desc: desc}); localStorage.setItem('saved_stickers', JSON.stringify(list)); Modal.renderStickers(); showToast("已添加"); } } }; reader.readAsDataURL(input.files[0]); input.value=''; } }
@@ -1753,12 +1822,11 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             } catch(e) { console.error(e); alert("网络错误"); }
         }
         
-        /* Utils */
         function safeSetText(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
         function safeSetSrc(id, src) { const el = document.getElementById(id); if(el) el.src = src; }
         function saveProfile() { if (!currentProfileId) return; try { const nameVal = document.getElementById('p_name').innerText.trim(); const coverSrc = document.getElementById('p_cover_img').src; const avatarSrc = document.getElementById('p_avatar_img').src; const list = JSON.parse(localStorage.getItem('chat_list_data')||'[]'); const idx = list.findIndex(c => c.id == currentProfileId); if (idx !== -1) { list[idx].name = nameVal; list[idx].avatar = avatarSrc; localStorage.setItem('chat_list_data', JSON.stringify(list)); } const profileData = JSON.parse(localStorage.getItem('chat_profile_' + currentProfileId) || '{}'); profileData.cover = coverSrc; profileData.userAvatar = document.getElementById('p_user_avatar_img').src; profileData.userPersona = document.getElementById('p_user_persona').innerText; profileData.aiPersona = document.getElementById('p_ai_persona').innerText; ['gender','age','birth','job','sign'].forEach(k => profileData[k] = document.getElementById('p_'+k).innerText); localStorage.setItem('chat_profile_' + currentProfileId, JSON.stringify(profileData)); showToast("✅ 资料已保存"); renderChatList(); renderFriendList(); } catch (e) { alert("❌ 保存失败"); } }
         
-        // --- 🔥 修复：全量数据导出 (游标模式) ---
+        // --- 📤 导出全部数据 ---
         async function exportData() {
             showToast("正在打包数据，请稍候...");
             const exportObj = {
@@ -1772,7 +1840,6 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                 exportObj.localStorage[key] = localStorage.getItem(key);
             }
             try {
-                // 使用 getAll 游标模式获取大容量数据
                 exportObj.imageDB = await ImageDB.getAll();
             } catch(e) { console.error("ImageDB Export Error:", e); }
             
@@ -1786,7 +1853,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             showToast("导出完成！");
         }
 
-        // --- 🔥 修复：全量数据导入 (事务恢复) ---
+        // --- 📥 恢复数据 ---
         function importData(input) {
             if(!input.files[0]) return;
             const r = new FileReader();
@@ -1799,12 +1866,9 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                     if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据(含图片)并刷新')) {
                         showToast("正在恢复数据...");
                         localStorage.clear();
-                        
-                        // 1. 恢复 LocalStorage
                         const lsData = isFullBackup ? data.localStorage : data; 
                         for(let k in lsData) { localStorage.setItem(k, lsData[k]); }
                         
-                        // 2. 恢复 ImageDB (如果是新版备份)
                         if(isFullBackup && data.imageDB) {
                             await ImageDB.restore(data.imageDB);
                         }
@@ -1814,7 +1878,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                     }
                 } catch(err) {
                     console.error(err);
-                    alert("❌ 导入失败: 文件可能已损坏。\n" + err.message);
+                    alert("❌ 导入失败: 文件格式错误。\n" + err.message);
                 }
             };
             r.readAsText(input.files[0]);
@@ -1866,6 +1930,10 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                                 const el = document.getElementById(id); 
                                 if(el.tagName === 'IMG') el.src = d; 
                                 else el.innerHTML = `<img src="${d}">`; 
+                                // 特别处理壁纸层
+                                if (k === 'save_wallpaper') {
+                                    document.getElementById('wallpaper-layer').style.backgroundImage = `url(${d})`;
+                                }
                                 if (id === 'coverImg') document.getElementById('coverHint').style.display = 'none'; 
                             } 
                             if (prev) document.getElementById(prev).innerHTML = `<img src="${d}">`; 
@@ -1897,10 +1965,11 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             } 
         }
         
+        // --- 🔥 壁纸加载逻辑 (Targeting Layer) ---
         async function loadWallpaper() { 
             let d = await ImageDB.getItem('save_wallpaper');
             if(!d) d = localStorage.getItem('save_wallpaper');
-            if(d) document.body.style.backgroundImage=`url(${d})`; 
+            if(d) document.getElementById('wallpaper-layer').style.backgroundImage=`url(${d})`; 
         }
         
         function applyFont() { const u=document.getElementById('fontUrlInput').value.trim();if(u){new FontFace('C',`url(${u})`).load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--main-font','C,sans-serif');localStorage.setItem('custom_font_url',u);showToast("已应用");});} }
@@ -2020,7 +2089,6 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                 if (link.includes('bilibili') || link.includes('b23.tv')) {
                     platform = 'bilibili';
                     let bvMatch = link.match(/(BV[a-zA-Z0-9]{10})/);
-                    // 如果没找到BV号，尝试解析短链内容
                     if (!bvMatch) { 
                         showToast("解析短链中..."); 
                         const resolvedHtml = await this.resolveShortUrl(link); 
@@ -2044,7 +2112,6 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                    const manualId = await Modal.show('prompt', '解析失败，手动输入 ID', '', '例如: BVxxx 或 1836xxx');
                    if(manualId) {
                        finalId = manualId.trim();
-                       // 简单推断平台
                        if(finalId.startsWith('BV')) platform = 'bilibili';
                        else if(/^\d+$/.test(finalId)) platform = 'netease';
                    }
