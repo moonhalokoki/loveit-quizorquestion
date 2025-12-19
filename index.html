@@ -1786,7 +1786,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             showToast("导出完成！");
         }
 
-        // --- 🔥 修复版：智能导入 (自动分流大文件，解决手机 Quota Exceeded) ---
+        // --- 🔥 修复：全量数据导入 (事务恢复) ---
         function importData(input) {
             if(!input.files[0]) return;
             const r = new FileReader();
@@ -1796,38 +1796,17 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                     const data = JSON.parse(rawData);
                     const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
                     
-                    if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据并刷新')) {
-                        showToast("正在恢复数据(大文件将自动转入DB)...");
+                    if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据(含图片)并刷新')) {
+                        showToast("正在恢复数据...");
                         localStorage.clear();
                         
-                        // 1. 恢复 IndexedDB (优先恢复原本就在DB里的)
+                        // 1. 恢复 LocalStorage
+                        const lsData = isFullBackup ? data.localStorage : data; 
+                        for(let k in lsData) { localStorage.setItem(k, lsData[k]); }
+                        
+                        // 2. 恢复 ImageDB (如果是新版备份)
                         if(isFullBackup && data.imageDB) {
                             await ImageDB.restore(data.imageDB);
-                        }
-
-                        // 2. 恢复 LocalStorage (带智能分流)
-                        const lsData = isFullBackup ? data.localStorage : data; 
-                        
-                        for(let k in lsData) { 
-                            const val = lsData[k];
-                            // 🔥 关键修复：检查数据长度
-                            // 如果是 base64 图片 或 长度超过 50KB 的字符串，直接存入 ImageDB，不占 LocalStorage 空间
-                            if (typeof val === 'string' && (val.startsWith('data:image') || val.length > 50000)) {
-                                console.log(`Key [${k}] is too large for LS, moving to ImageDB.`);
-                                await ImageDB.setItem(k, val);
-                            } else {
-                                try {
-                                    localStorage.setItem(k, val);
-                                } catch (err) {
-                                    // 双重保险：如果写入 LocalStorage 还是报错（空间满了），则捕获错误并转存到 ImageDB
-                                    if (err.name === 'QuotaExceededError' || err.code === 22) {
-                                        console.warn(`LocalStorage full! Moving [${k}] to ImageDB.`);
-                                        await ImageDB.setItem(k, val);
-                                    } else {
-                                        console.error("Unknown Storage Error", err);
-                                    }
-                                }
-                            }
                         }
                         
                         showToast("恢复成功，即将刷新");
@@ -1835,7 +1814,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
                     }
                 } catch(err) {
                     console.error(err);
-                    alert("❌ 导入失败: 文件过大内存不足或格式错误。\n" + err.message);
+                    alert("❌ 导入失败: 文件可能已损坏。\n" + err.message);
                 }
             };
             r.readAsText(input.files[0]);
