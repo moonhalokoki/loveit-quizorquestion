@@ -1158,90 +1158,141 @@
     <input type="file" id="iconInput_music" accept="image/*" onchange="compressAndSave(this, 'icon_music', 'save_icon_music', 'preview_music', 'image/png')">
 
     <script>
-        // --- 💾 核心：大容量存储系统 (IndexedDB) 修复版 ---
-        const ImageDB = {
-            dbName: "KawaiiOS_Assets", storeName: "images", db: null,
+        // --- 💾 核心：大容量存储系统 (IndexedDB) 全功能修复版 ---
+const ImageDB = {
+    dbName: "KawaiiOS_Assets", 
+    storeName: "images", 
+    db: null,
+    
+    // 1. 初始化 (带自动升级逻辑)
+    async init() { 
+        return new Promise((resolve, reject) => { 
+            // 试图打开数据库
+            const request = indexedDB.open(this.dbName, 1); 
             
-            async init() { 
-                return new Promise((resolve, reject) => { 
-                    const request = indexedDB.open(this.dbName, 1); 
-                    request.onupgradeneeded = (event) => { 
-                        const db = event.target.result; 
-                        if (!db.objectStoreNames.contains(this.storeName)) { db.createObjectStore(this.storeName); } 
-                    }; 
-                    request.onsuccess = (event) => { this.db = event.target.result; resolve(this.db); }; 
-                    request.onerror = (event) => reject("DB Init Fail"); 
-                }); 
-            },
-
-            async setItem(key, val) { 
-                if (!this.db) await this.init(); 
-                return new Promise((resolve, reject) => { 
-                    const tx = this.db.transaction([this.storeName], "readwrite"); 
-                    const req = tx.objectStore(this.storeName).put(val, key); 
-                    req.onsuccess = () => resolve(); 
-                    req.onerror = () => reject(); 
-                }); 
-            },
-
-            async getItem(key) { 
-                if (!this.db) await this.init(); 
-                return new Promise((resolve) => { 
-                    const tx = this.db.transaction([this.storeName], "readonly"); 
-                    const req = tx.objectStore(this.storeName).get(key); 
-                    req.onsuccess = () => resolve(req.result || null); 
-                    req.onerror = () => resolve(null); 
-                }); 
-            },
+            request.onupgradeneeded = (event) => { 
+                const db = event.target.result; 
+                if (!db.objectStoreNames.contains(this.storeName)) { 
+                    db.createObjectStore(this.storeName); 
+                } 
+            }; 
             
-            async removeItem(key) { 
-                if (!this.db) await this.init(); 
-                const tx = this.db.transaction([this.storeName], "readwrite"); 
-                tx.objectStore(this.storeName).delete(key); 
-            },
+            request.onsuccess = (event) => { 
+                this.db = event.target.result; 
+                console.log("ImageDB 初始化成功");
+                resolve(this.db); 
+            }; 
             
-            // --- 🔥 修复：使用 Cursor 遍历确保数据完整导出 ---
-            async getAll() {
-                if (!this.db) await this.init();
-                return new Promise((resolve) => {
-                    const tx = this.db.transaction([this.storeName], "readonly");
-                    const store = tx.objectStore(this.storeName);
-                    const result = {};
-                    const req = store.openCursor();
-                    req.onsuccess = (e) => {
-                        const cursor = e.target.result;
-                        if(cursor) {
-                            result[cursor.key] = cursor.value;
-                            cursor.continue();
-                        } else {
-                            resolve(result); // 遍历结束
-                        }
-                    };
-                    req.onerror = () => resolve({});
-                });
-            },
+            request.onerror = (event) => {
+                console.error("DB Init Error:", event);
+                // 这里不reject，避免卡死后续逻辑，但会在控制台报错
+                reject("DB Init Fail"); 
+            };
+        }); 
+    },
 
-            // --- 🔥 修复：显式事务恢复数据 ---
-            async restore(dataObj) {
-                if (!this.db) await this.init();
-                return new Promise((resolve, reject) => {
-                    const tx = this.db.transaction([this.storeName], "readwrite");
-                    const store = tx.objectStore(this.storeName);
-                    store.clear().onsuccess = () => {
-                        let count = 0;
-                        const keys = Object.keys(dataObj);
-                        if (keys.length === 0) return resolve();
-                        keys.forEach(key => {
-                            store.put(dataObj[key], key);
-                            count++;
-                            if (count === keys.length) resolve();
-                        });
-                    };
-                    tx.onabort = () => reject();
-                    tx.onerror = () => reject();
-                });
+    // 2. 🔥【补回来的功能】：读取单个数据 (解决 getItem is not a function)
+    async getItem(key) {
+        if (!this.db) await this.init(); // 如果还没初始化，先初始化
+        return new Promise((resolve, reject) => {
+            try {
+                const transaction = this.db.transaction([this.storeName], "readonly");
+                const store = transaction.objectStore(this.storeName);
+                const request = store.get(key);
+                
+                request.onsuccess = (e) => {
+                    resolve(e.target.result); // 返回找到的数据（Blob或String）
+                };
+                request.onerror = (e) => {
+                    console.warn("读取图片失败:", key);
+                    resolve(null); // 即使失败也不要报错炸掉页面
+                };
+            } catch (e) {
+                resolve(null);
             }
-        };
+        });
+    },
+
+    // 3. 🔥【补回来的功能】：存储单个数据 (保存背景/头像时需要)
+    async setItem(key, val) {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([this.storeName], "readwrite");
+            const store = transaction.objectStore(this.storeName);
+            store.put(val, key);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = (e) => reject(e);
+        });
+    },
+
+    // 4. 获取所有数据 (用于导出)
+    async getAll() {
+        if (!this.db) await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([this.storeName], "readonly");
+            const store = transaction.objectStore(this.storeName);
+            const request = store.openCursor();
+            const results = {};
+            
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const key = cursor.key;
+                    const val = cursor.value;
+                    // 如果是 Blob，转 Base64 方便导出
+                    if (val instanceof Blob) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            results[key] = reader.result;
+                            cursor.continue();
+                        };
+                        reader.readAsDataURL(val);
+                    } else {
+                        results[key] = val;
+                        cursor.continue();
+                    }
+                } else {
+                    resolve(results);
+                }
+            };
+            request.onerror = () => reject("GetAll Failed");
+        });
+    },
+
+    // 5. 修复版恢复数据 (用于导入)
+    async restore(dataObj) {
+        if (!this.db) await this.init();
+        
+        console.log("正在预处理图片数据...");
+        // 内存转换逻辑，防止事务超时
+        const entries = Object.entries(dataObj);
+        const preparedData = [];
+
+        for (const [key, value] of entries) {
+            let valueToStore = value;
+            if (typeof value === 'string' && value.startsWith('data:image')) {
+                try {
+                    const res = await fetch(value);
+                    valueToStore = await res.blob();
+                } catch (e) { console.warn("Blob转换失败:", key); }
+            }
+            preparedData.push({ key, val: valueToStore });
+        }
+
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([this.storeName], "readwrite");
+            const store = transaction.objectStore(this.storeName);
+            store.clear(); // 清空旧数据
+            preparedData.forEach(item => store.put(item.val, item.key));
+            
+            transaction.oncomplete = () => {
+                console.log("ImageDB 恢复完成");
+                resolve();
+            };
+            transaction.onerror = (e) => reject("写入失败: " + e.target.error);
+        });
+    }
+};
         ImageDB.init();
 
         const Modal = {
@@ -2132,6 +2183,52 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             }
             showToast(`已添加 ${newName} 到通讯录`);
         }
+        // --- 🔧 自动修复显示补丁 ---
+// 放在所有代码的最下面
+document.addEventListener('DOMContentLoaded', () => {
+    fixAllImages();
+    // 每隔 2 秒检查一次，防止动态加载的图片漏网
+    setInterval(fixAllImages, 2000);
+});
+
+async function fixAllImages() {
+    // 1. 修复 <img> 标签
+    const imgs = document.querySelectorAll('img');
+    imgs.forEach(async (img) => {
+        // 如果图片裂了，或者 src 是个短字符串（比如 ID）
+        const src = img.getAttribute('src');
+        if (!src) return;
+
+        // 判断：如果不包含 "/" 也不包含 "data:"，那它肯定是个 ID
+        if (!src.includes('/') && !src.startsWith('data:') && !src.startsWith('blob:')) {
+            console.log("正在尝试修复图片:", src);
+            const blob = await ImageDB.getItem(src);
+            if (blob) {
+                img.src = URL.createObjectURL(blob);
+                console.log("✅ 图片修复成功:", src);
+            }
+        }
+    });
+
+    // 2. 修复背景图 (body 或 div)
+    const bgElements = document.querySelectorAll('body, div');
+    bgElements.forEach(async (el) => {
+        const bg = el.style.backgroundImage;
+        // 提取 url("xxx") 里的 xxx
+        const match = bg.match(/url\(['"]?([^'"]+)['"]?\)/);
+        if (match) {
+            const key = match[1];
+            // 如果也是 ID 格式
+            if (!key.includes('/') && !key.startsWith('data:') && !key.startsWith('blob:')) {
+                 console.log("正在尝试修复背景:", key);
+                 const blob = await ImageDB.getItem(key);
+                 if (blob) {
+                     el.style.backgroundImage = `url(${URL.createObjectURL(blob)})`;
+                 }
+            }
+        }
+    });
+}
     </script>
 </body>
 </html>
