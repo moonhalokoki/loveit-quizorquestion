@@ -1821,40 +1821,66 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             showToast("导出完成！");
         }
 
-        // --- 🔥 修复：全量数据导入 (事务恢复) ---
-        function importData(input) {
-            if(!input.files[0]) return;
-            const r = new FileReader();
-            r.onload = async e => {
-                try {
-                    const rawData = e.target.result;
-                    const data = JSON.parse(rawData);
-                    const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
-                    
-                    if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据(含图片)并刷新')) {
-                        showToast("正在恢复数据...");
-                        localStorage.clear();
-                        
-                        // 1. 恢复 LocalStorage
-                        const lsData = isFullBackup ? data.localStorage : data; 
-                        for(let k in lsData) { localStorage.setItem(k, lsData[k]); }
-                        
-                        // 2. 恢复 ImageDB (如果是新版备份)
-                        if(isFullBackup && data.imageDB) {
-                            await ImageDB.restore(data.imageDB);
-                        }
-                        
-                        showToast("恢复成功，即将刷新");
-                        setTimeout(() => location.reload(), 1500);
-                    }
-                } catch(err) {
-                    console.error(err);
-                    alert("❌ 导入失败: 文件可能已损坏。\n" + err.message);
+        // --- 📥 智能导入系统 (防手机 Quota 报错版) ---
+function importData(input) {
+    if(!input.files[0]) return;
+    
+    const r = new FileReader();
+    r.onload = async e => {
+        try {
+            const rawData = e.target.result;
+            // 1. 解析 JSON
+            const data = JSON.parse(rawData);
+            
+            // 2. 询问用户
+            if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据并刷新')) {
+                showToast("正在恢复数据...");
+                
+                // 3. 先清空现有数据 (腾出空间)
+                localStorage.clear();
+                
+                // 判断是新版备份还是旧版
+                const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
+                
+                // --- 📦 恢复 ImageDB (图片库) ---
+                // 这是大头，必须先处理，而且是存到 IndexedDB，不会报 Quota
+                if(isFullBackup && data.imageDB) {
+                    await ImageDB.restore(data.imageDB);
+                } else if (!isFullBackup && data.images) {
+                    // 兼容某些旧版本
+                    await ImageDB.restore(data.images);
                 }
-            };
-            r.readAsText(input.files[0]);
-            input.value='';
+
+                // --- 📝 恢复 LocalStorage (文本设置) ---
+                // 这里最容易报 Quota，所以我们要加“过滤器”
+                const lsData = isFullBackup ? data.localStorage : data; 
+                
+                for(let k in lsData) {
+                    // 🚫 过滤掉可能混进去的大数据
+                    // 如果 key 是 'imageDB', 'images' 或者看起来像图片的，千万别往 LocalStorage 里塞
+                    if (k === 'imageDB' || k === 'images' || k === 'temp_img') continue;
+                    
+                    try {
+                        // 🔒 加个保险：尝试写入
+                        localStorage.setItem(k, lsData[k]);
+                    } catch(err) {
+                        // 如果报错 Quota Exceeded，说明这个字段太大了，跳过它，保全大局
+                        console.warn(`跳过过大字段 [${k}]:`, err);
+                    }
+                }
+                
+                showToast("恢复成功，即将刷新");
+                setTimeout(() => location.reload(), 1500);
+            }
+        } catch(err) {
+            console.error(err);
+            alert("❌ 导入失败: " + err.message);
         }
+    };
+    // 读取文件
+    r.readAsText(input.files[0]);
+    input.value=''; // 重置 input 防止重复触发
+}
 
         async function forceClearData() { if(await Modal.show('confirm-danger', '清空数据？')) { localStorage.clear(); location.reload(); } }
         function openSettingsApp() { document.getElementById('settingsApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); }
