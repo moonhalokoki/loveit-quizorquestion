@@ -2276,5 +2276,50 @@ async function fixAllImages() {
         });
     }, 2000);
     </script>
+    <!-- 🔍 手机诊断按钮 (测试完可删) -->
+<div style="position:fixed; bottom:50px; left:10px; z-index:9999;">
+    <button onclick="diagnoseDB()" style="background:blue; color:white; padding:15px; border-radius:10px; font-size:16px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+        🚑 点击诊断数据库
+    </button>
+</div>
+
+<script>
+async function diagnoseDB() {
+    try {
+        const data = await ImageDB.getAll();
+        const keys = Object.keys(data);
+        const count = keys.length;
+        
+        if (count === 0) {
+            alert("❌ 诊断结果：\n仓库是空的！(0张)\n导入根本没成功。");
+            return;
+        }
+
+        const firstKey = keys[0];
+        const firstVal = data[firstKey];
+        const valType = (firstVal instanceof Blob) ? "Blob (二进制)" : typeof firstVal;
+        
+        let msg = `✅ 诊断结果：\n`;
+        msg += `仓库里有 ${count} 张图片。\n`;
+        msg += `----------------\n`;
+        msg += `🔑 第一张的名字: [${firstKey}]\n`;
+        msg += `(如果是 0 或 1 说明备份坏了)\n`;
+        msg += `----------------\n`;
+        msg += `📦 数据格式: [${valType}]\n`;
+        
+        if (typeof firstVal === 'string') {
+             msg += `(开头是: ${firstVal.substring(0, 20)}...)\n`;
+             msg += `⚠️ 警告：存的是字符串，需要渲染补丁！`;
+        } else {
+             msg += `✅ 格式完美 (Blob)`;
+        }
+
+        alert(msg);
+        
+    } catch (e) {
+        alert("❌ 无法读取数据库: " + e);
+    }
+}
+</script>
 </body>
 </html>
