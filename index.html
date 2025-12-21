@@ -1821,7 +1821,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             showToast("导出完成！");
         }
 
-        // --- 📥 修复手机 Quota 报错的导入函数 ---
+        // --- 📥 智能迁移导入 (自动把 LS 里的散装图挪到 DB) ---
 function importData(input) {
     if(!input.files[0]) return;
     
@@ -1831,42 +1831,60 @@ function importData(input) {
             const rawData = e.target.result;
             const data = JSON.parse(rawData);
             
-            if(confirm("确定要恢复备份吗？这将覆盖当前数据。")) {
-                // 1. 先清空，腾位置
+            if(confirm("确定要恢复备份吗？\n(程序会自动优化存储结构)")) {
+                // 1. 清空当前环境
                 localStorage.clear();
+                // 确保 DB 已连接
+                if (!ImageDB.db) await ImageDB.init();
+
+                const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
                 
-                // 2. 识别备份类型
-                const isFullBackup = data.meta === "KawaiiOS_Full_Backup"; // 或者是你的 meta 标识
-                
-                // --- 关键点：先把图片挑出来，存进 IndexedDB ---
-                // 这样就不会占用 LocalStorage 的 5MB 配额
+                // --- A. 先恢复原本就在 DB 里的图 ---
                 if(isFullBackup && data.imageDB) {
-                    // 如果你的 ImageDB 代码是好的，这行会把图片存进大仓库
                     await ImageDB.restore(data.imageDB);
                 } else if (data.images) {
                     await ImageDB.restore(data.images);
                 }
 
-                // --- 3. 剩下的文字设置，存进 LocalStorage ---
+                // --- B. 重点：扫描 LocalStorage，把混进去的图挖出来 ---
                 const lsData = isFullBackup ? data.localStorage : data; 
                 
+                // 准备一个干净的 LS 对象
+                const cleanLS = {};
+
                 for(let k in lsData) {
-                    // 🛑 严防死守：千万别把图片库又塞回 LocalStorage
-                    if (k === 'imageDB' || k === 'images' || k === 'temp_img') continue;
+                    let val = lsData[k];
                     
+                    // 🕵️‍♂️ 侦探逻辑：如果是 Base64 图片字符串
+                    if (typeof val === 'string' && val.startsWith('data:image')) {
+                        console.log(`🧹 正在迁移图片 [${k}] 到数据库...`);
+                        // 把它存到大仓库 (IndexedDB)
+                        await ImageDB.setItem(k, val);
+                    } 
+                    // 过滤掉原本的数据库大字段
+                    else if (k === 'imageDB' || k === 'images' || k === 'temp_img') {
+                        continue;
+                    }
+                    // 剩下的纯文字，才是 LocalStorage 该存的
+                    else {
+                        cleanLS[k] = val;
+                    }
+                }
+
+                // --- C. 安全写入瘦身后的 LocalStorage ---
+                for (let k in cleanLS) {
                     try {
-                        localStorage.setItem(k, lsData[k]);
-                    } catch(err) {
-                        // 如果这里还报错，说明文字也太多了（极少见）
-                        console.warn("跳过超大字段:", k);
+                        localStorage.setItem(k, cleanLS[k]);
+                    } catch (err) {
+                        console.warn("⚠️ LocalStorage 依然很满，跳过:", k);
                     }
                 }
                 
-                alert("恢复成功！页面即将刷新");
+                alert("✅ 恢复成功！\n存储空间已优化，手机可以正常使用了！");
                 setTimeout(() => location.reload(), 500);
             }
         } catch(err) {
-            alert("导入失败: " + err.message);
+            alert("❌ 导入失败: " + err.message);
         }
     };
     r.readAsText(input.files[0]);
