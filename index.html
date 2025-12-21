@@ -1821,66 +1821,7 @@ Instructions: Add tag (face:smile) or (face:angry) at start of line to change fa
             showToast("导出完成！");
         }
 
-        // --- 📥 智能导入系统 (防手机 Quota 报错版) ---
-function importData(input) {
-    if(!input.files[0]) return;
-    
-    const r = new FileReader();
-    r.onload = async e => {
-        try {
-            const rawData = e.target.result;
-            // 1. 解析 JSON
-            const data = JSON.parse(rawData);
-            
-            // 2. 询问用户
-            if(await Modal.show('confirm-danger', '恢复备份?', '这将覆盖当前所有数据并刷新')) {
-                showToast("正在恢复数据...");
-                
-                // 3. 先清空现有数据 (腾出空间)
-                localStorage.clear();
-                
-                // 判断是新版备份还是旧版
-                const isFullBackup = data.meta === "KawaiiOS_Full_Backup";
-                
-                // --- 📦 恢复 ImageDB (图片库) ---
-                // 这是大头，必须先处理，而且是存到 IndexedDB，不会报 Quota
-                if(isFullBackup && data.imageDB) {
-                    await ImageDB.restore(data.imageDB);
-                } else if (!isFullBackup && data.images) {
-                    // 兼容某些旧版本
-                    await ImageDB.restore(data.images);
-                }
-
-                // --- 📝 恢复 LocalStorage (文本设置) ---
-                // 这里最容易报 Quota，所以我们要加“过滤器”
-                const lsData = isFullBackup ? data.localStorage : data; 
-                
-                for(let k in lsData) {
-                    // 🚫 过滤掉可能混进去的大数据
-                    // 如果 key 是 'imageDB', 'images' 或者看起来像图片的，千万别往 LocalStorage 里塞
-                    if (k === 'imageDB' || k === 'images' || k === 'temp_img') continue;
-                    
-                    try {
-                        // 🔒 加个保险：尝试写入
-                        localStorage.setItem(k, lsData[k]);
-                    } catch(err) {
-                        // 如果报错 Quota Exceeded，说明这个字段太大了，跳过它，保全大局
-                        console.warn(`跳过过大字段 [${k}]:`, err);
-                    }
-                }
-                
-                showToast("恢复成功，即将刷新");
-                setTimeout(() => location.reload(), 1500);
-            }
-        } catch(err) {
-            console.error(err);
-            alert("❌ 导入失败: " + err.message);
-        }
-    };
-    // 读取文件
-    r.readAsText(input.files[0]);
-    input.value=''; // 重置 input 防止重复触发
-}
+        // --- 📥 修复手机 Quota 报错的导入函数 ---<br/>function importData(input) {<br/>    if(!input.files[0]) return;<br/>    <br/>    const r = new FileReader();<br/>    r.onload = async e => {<br/>        try {<br/>            const rawData = e.target.result;<br/>            const data = JSON.parse(rawData);<br/>            <br/>            if(confirm("确定要恢复备份吗？这将覆盖当前数据。")) {<br/>                // 1. 先清空，腾位置<br/>                localStorage.clear();<br/>                <br/>                // 2. 识别备份类型<br/>                const isFullBackup = data.meta === "KawaiiOS_Full_Backup"; // 或者是你的 meta 标识<br/>                <br/>                // --- 关键点：先把图片挑出来，存进 IndexedDB ---<br/>                // 这样就不会占用 LocalStorage 的 5MB 配额<br/>                if(isFullBackup && data.imageDB) {<br/>                    // 如果你的 ImageDB 代码是好的，这行会把图片存进大仓库<br/>                    await ImageDB.restore(data.imageDB);<br/>                } else if (data.images) {<br/>                    await ImageDB.restore(data.images);<br/>                }<br/><br/>                // --- 3. 剩下的文字设置，存进 LocalStorage ---<br/>                const lsData = isFullBackup ? data.localStorage : data; <br/>                <br/>                for(let k in lsData) {<br/>                    // 🛑 严防死守：千万别把图片库又塞回 LocalStorage<br/>                    if (k === 'imageDB' || k === 'images' || k === 'temp_img') continue;<br/>                    <br/>                    try {<br/>                        localStorage.setItem(k, lsData[k]);<br/>                    } catch(err) {<br/>                        // 如果这里还报错，说明文字也太多了（极少见）<br/>                        console.warn("跳过超大字段:", k);<br/>                    }<br/>                }<br/>                <br/>                alert("恢复成功！页面即将刷新");<br/>                setTimeout(() => location.reload(), 500);<br/>            }<br/>        } catch(err) {<br/>            alert("导入失败: " + err.message);<br/>        }<br/>    };<br/>    r.readAsText(input.files[0]);<br/>    input.value=''; <br/>}
 
         async function forceClearData() { if(await Modal.show('confirm-danger', '清空数据？')) { localStorage.clear(); location.reload(); } }
         function openSettingsApp() { document.getElementById('settingsApp').classList.add('active'); document.getElementById('desktop').classList.add('pushed'); }
