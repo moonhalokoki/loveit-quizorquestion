@@ -634,7 +634,40 @@
         .track-item.active { background: rgba(255,255,255,0.1); }
         .track-info { margin-left: 10px; text-align: left; flex: 1; }
         .track-cover { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+/* --- ⏰ 时间戳新样式 (开始) --- */
+.msg-bubble-wrapper {
+    max-width: 72%;
+    display: flex;
+    flex-direction: row;      /* 别人的消息：气泡在左，时间在右 */
+    align-items: flex-end;    /* 底部对齐 */
+    gap: 6px;                 /* 间距 */
+}
 
+.msg-row.self .msg-bubble-wrapper {
+    flex-direction: row-reverse; /* 自己的消息：时间在左，气泡在右 */
+}
+
+.msg-time-side {
+    font-size: 10px;
+    color: #bbb;
+    flex-shrink: 0;           /* 防止时间被挤扁 */
+    margin-bottom: 2px;
+    user-select: none;
+}
+
+/* 隐藏旧的头像下放的时间 */
+.msg-time { display: none !important; }
+
+/* 修复头像位置，让它顶对齐 */
+.avatar-container {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    margin: 0 8px; 
+    flex-shrink: 0; 
+    justify-content: flex-start; 
+}
+/* --- ⏰ 时间戳新样式 (结束) --- */
     </style>
 </head>
 <body>
@@ -2078,26 +2111,79 @@ async function loadWallpaper() {
         function openVNSettings() { document.getElementById('interactSettingsApp').classList.add('active'); renderAssetList('bg'); renderAssetList('sprite'); renderScheduleList(); }
         function closeVNSettings() { document.getElementById('interactSettingsApp').classList.remove('active'); }
         async function renderAssetList(type) { 
-            const assetsKey = 'chat_vn_assets_' + interactId; const data = (await KawaiiDB.getItem(assetsKey)) || {backgrounds:[], sprites:[]}; 
-            const list = type === 'bg' ? data.backgrounds : data.sprites; const container = document.getElementById(type === 'bg' ? 'vnBgGrid' : 'vnSpriteGrid'); container.innerHTML = ''; 
-            if(list.length === 0) { container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;">无资源</div>'; return; } 
+            const assetsKey = 'chat_vn_assets_' + interactId; 
+            const data = (await KawaiiDB.getItem(assetsKey)) || {backgrounds:[], sprites:[]}; 
+            const list = type === 'bg' ? data.backgrounds : data.sprites; 
+            const container = document.getElementById(type === 'bg' ? 'vnBgGrid' : 'vnSpriteGrid'); 
+            container.innerHTML = ''; 
+            
+            if(list.length === 0) { 
+                container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;">无资源</div>'; 
+                return; 
+            } 
+            
             const currentProfile = (await KawaiiDB.getItem('chat_profile_'+interactId)) || {}; 
+            
             for(let index=0; index<list.length; index++) {
-                const item = list[index]; const div = document.createElement('div'); div.className = 'asset-item'; 
-                let displayName = item.name; if(type === 'sprite' && item.outfit) displayName = `${item.outfit} / ${item.face}`; 
+                const item = list[index]; 
+                const div = document.createElement('div'); 
+                div.className = 'asset-item'; 
+                
+                let displayName = item.name; 
+                if(type === 'sprite' && item.outfit) displayName = `${item.outfit} / ${item.face}`; 
+                
+                // --- 🛠️ 修复核心开始 ---
                 let imgSrc = item.url;
+                // 判断是否是数据库ID引用（即不是 data: 开头，也不包含路径 /）
                 if(imgSrc && !imgSrc.startsWith('data:') && !imgSrc.includes('/')) {
-                    const blob = await KawaiiDB.getItem(imgSrc);
-                    if(blob) imgSrc = URL.createObjectURL(blob);
+                    const savedData = await KawaiiDB.getItem(imgSrc);
+                    if(savedData) {
+                        // 关键修复：判断读取到的是 Blob 对象还是 Base64 字符串
+                        if (savedData instanceof Blob) {
+                            imgSrc = URL.createObjectURL(savedData);
+                        } else {
+                            // 如果是字符串，直接使用
+                            imgSrc = savedData;
+                        }
+                    }
                 }
+                // --- 🛠️ 修复核心结束 ---
+
                 div.innerHTML = `<img src="${imgSrc}"><div class="asset-name">${displayName}</div>`; 
+                
                 if(type === 'bg') { 
                     if(item.url === currentProfile.interact_bg || imgSrc === currentProfile.interact_bg) div.classList.add('active'); 
-                    div.onclick = async () => { const profile = (await KawaiiDB.getItem('chat_profile_'+interactId)) || {}; profile.interact_bg = item.url; await KawaiiDB.setItem('chat_profile_'+interactId, profile); vnState.bgName = item.name; showToast(`背景已切换: ${item.name}`); renderAssetList('bg'); if(activeChatId === interactId) updateInteractDisplay(); }; 
+                    div.onclick = async () => { 
+                        const profile = (await KawaiiDB.getItem('chat_profile_'+interactId)) || {}; 
+                        profile.interact_bg = item.url; 
+                        await KawaiiDB.setItem('chat_profile_'+interactId, profile); 
+                        vnState.bgName = item.name; 
+                        showToast(`背景已切换: ${item.name}`); 
+                        renderAssetList('bg'); 
+                        if(activeChatId === interactId) updateInteractDisplay(); 
+                    }; 
                 } else { 
-                    div.onclick = () => { vnState.outfit = item.outfit; vnState.face = item.face; showToast(`立绘已切换`); if(activeChatId === interactId) updateInteractDisplay(); } 
+                    div.onclick = () => { 
+                        vnState.outfit = item.outfit; 
+                        vnState.face = item.face; 
+                        showToast(`立绘已切换`); 
+                        if(activeChatId === interactId) updateInteractDisplay(); 
+                    } 
                 } 
-                let timer; div.addEventListener('touchstart', () => { timer = setTimeout(async () => { if(await Modal.show('confirm-danger', `删除 ${displayName}?`)) { list.splice(index, 1); if(type==='bg') data.backgrounds = list; else data.sprites = list; await KawaiiDB.setItem(assetsKey, data); renderAssetList(type); } }, 600); }); div.addEventListener('touchend', () => clearTimeout(timer)); container.appendChild(div); 
+                
+                let timer; 
+                div.addEventListener('touchstart', () => { 
+                    timer = setTimeout(async () => { 
+                        if(await Modal.show('confirm-danger', `删除 ${displayName}?`)) { 
+                            list.splice(index, 1); 
+                            if(type==='bg') data.backgrounds = list; else data.sprites = list; 
+                            await KawaiiDB.setItem(assetsKey, data); 
+                            renderAssetList(type); 
+                        } 
+                    }, 600); 
+                }); 
+                div.addEventListener('touchend', () => clearTimeout(timer)); 
+                container.appendChild(div); 
             }
         }
         let scheduleTimer = null;
@@ -2260,7 +2346,7 @@ Instructions: Use "/n" to split distinct dialogue bubbles. Include character act
         div.className = `msg-row ${isSelf ? 'self' : 'other'}`;
         div.id = `msg-${index}`;
         
-        // 绑定事件 (长按选择等)
+        // 绑定点击和长按事件
         div.addEventListener('touchstart', () => { 
             if(!window.isSelectionMode) window.longPressTimer = setTimeout(() => handleLongPress(index), 600); 
         });
@@ -2269,7 +2355,7 @@ Instructions: Use "/n" to split distinct dialogue bubbles. Include character act
         div.oncontextmenu = function() { return false; };
         div.addEventListener('click', () => { if(window.isSelectionMode) toggleSelection(index); });
 
-        // 头像处理
+        // 获取头像
         let avatarUrl; 
         if (isSelf) { 
             const profile = (await KawaiiDB.getItem('chat_profile_' + activeChatId)) || {}; 
@@ -2278,12 +2364,14 @@ Instructions: Use "/n" to split distinct dialogue bubbles. Include character act
             avatarUrl = activeChatAvatar || 'https://via.placeholder.com/100'; 
         }
 
+        // 创建包裹层
         const contentWrapper = document.createElement('div'); 
         contentWrapper.className = 'msg-bubble-wrapper'; 
+        
         const bubble = document.createElement('div'); 
         bubble.className = 'msg-bubble'; 
 
-        // 内容类型处理
+        // 填充内容
         if (msg.type === 'sticker') { 
             bubble.innerHTML = `<img src="${msg.content}" class="msg-sticker">`; 
         } else if (msg.type === 'image') { 
@@ -2302,11 +2390,27 @@ Instructions: Use "/n" to split distinct dialogue bubbles. Include character act
             }; 
         } else { 
             bubble.innerHTML = `<div class="msg-content">${msg.content}</div>`; 
-        } 
+        }
         
+        // --- ✨ 这里是时间处理的核心逻辑 ✨ ---
+        let displayTime = msg.time || '';
+        // 如果时间有秒（例如 12:30:05），只保留前5位（12:30）
+        if(displayTime && displayTime.split(':').length > 2) {
+            displayTime = displayTime.substring(0, 5); 
+        }
+        const timeSpan = document.createElement('div');
+        timeSpan.className = 'msg-time-side'; 
+        timeSpan.innerText = displayTime;
+        // -------------------------------------
+
+        // 把气泡和时间放进去
         contentWrapper.appendChild(bubble); 
-        const avatarHtml = `<div class="avatar-container"><div class="msg-avatar"><img src="${avatarUrl}"></div><div class="msg-time">${msg.time || ''}</div></div>`; 
+        contentWrapper.appendChild(timeSpan); 
+
+        // 头像部分（不含时间了）
+        const avatarHtml = `<div class="avatar-container"><div class="msg-avatar"><img src="${avatarUrl}"></div></div>`; 
         
+        // 组装最终HTML
         if (!isSelf) div.insertAdjacentHTML('beforeend', avatarHtml); 
         div.appendChild(contentWrapper); 
         if (isSelf) div.insertAdjacentHTML('beforeend', avatarHtml); 
